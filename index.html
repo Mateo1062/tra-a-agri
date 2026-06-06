@@ -1,0 +1,2217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Traç'Agri</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g-deep:#1a2e1c;--g-mid:#2d5a30;--g-accent:#4a9050;--g-light:#7cc47f;--g-pale:#e8f5e9;
+  --cream:#f5f2eb;--cream-dark:#e8e3d8;--white:#fff;
+  --txt:#1a2e1c;--muted:#6b7c6d;--border:#dde8de;
+  --amber:#d97706;--amber-pale:#fef3c7;--blue:#2563eb;--blue-pale:#eff6ff;
+  --red:#dc2626;--red-pale:#fef2f2;
+  --sh:0 4px 16px rgba(26,46,28,.10);
+}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--txt);overflow:hidden}
+
+/* ── LOGIN ── */
+#login-page{position:fixed;inset:0;z-index:1000;display:grid;grid-template-columns:1fr 1fr;background:var(--cream)}
+.lp-left{background:var(--g-deep);display:flex;flex-direction:column;justify-content:space-between;padding:3rem;position:relative;overflow:hidden}
+.lp-left::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 80%,rgba(74,144,80,.25) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 20%,rgba(45,90,48,.4) 0%,transparent 55%);pointer-events:none}
+.lp-brand{position:relative;z-index:1;animation:fadeUp .6s ease both}
+.lp-row{display:flex;align-items:center;gap:.7rem}
+.lp-ico{width:42px;height:42px;background:var(--g-accent);border-radius:12px;display:grid;place-items:center}
+.lp-ico svg{width:22px;height:22px;fill:white}
+.lp-name{font-family:'DM Serif Display',serif;font-size:1.8rem;color:white}
+.lp-tag{font-size:.75rem;color:var(--g-light);letter-spacing:.08em;text-transform:uppercase;margin-top:.2rem;margin-left:54px}
+.lp-tagline{position:relative;z-index:1;animation:fadeUp .6s .12s ease both}
+.lp-tagline h2{font-family:'DM Serif Display',serif;font-size:2.4rem;color:white;line-height:1.2;margin-bottom:.8rem}
+.lp-tagline h2 em{color:var(--g-light);font-style:italic}
+.lp-tagline p{color:rgba(255,255,255,.5);font-size:.9rem;line-height:1.6;max-width:300px}
+.lp-stats{position:relative;z-index:1;display:flex;gap:2rem;animation:fadeUp .6s .24s ease both}
+.lp-sn{font-family:'DM Serif Display',serif;font-size:1.7rem;color:white}
+.lp-sl{font-size:.72rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.06em}
+.lp-right{display:flex;align-items:center;justify-content:center;padding:2rem}
+.lp-card{width:100%;max-width:380px;animation:fadeUp .7s .08s ease both}
+.lp-card h1{font-family:'DM Serif Display',serif;font-size:1.9rem;margin-bottom:.2rem}
+.lp-card .sub{color:var(--muted);font-size:.88rem;margin-bottom:2rem}
+.f-grp{margin-bottom:1.2rem}
+.f-lbl{display:block;font-size:.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:.4rem}
+.f-wrap{position:relative}
+.f-wrap .f-ico{position:absolute;left:.9rem;top:50%;transform:translateY(-50%);width:17px;height:17px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;pointer-events:none;transition:stroke .2s}
+.f-wrap:focus-within .f-ico{stroke:var(--g-accent)}
+input[type=text],input[type=password],input[type=email],input[type=number],input[type=date],select,textarea{
+  width:100%;padding:.75rem .9rem .75rem 2.6rem;border:1.5px solid var(--cream-dark);border-radius:9px;
+  font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--txt);background:white;outline:none;
+  transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--g-accent);box-shadow:0 0 0 3px rgba(74,144,80,.12)}
+input.no-icon,select.no-icon,textarea.no-icon{padding-left:.9rem}
+.eye-btn{position:absolute;right:.8rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:grid;place-items:center}
+.eye-btn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.err-box{display:none;align-items:center;gap:.4rem;background:#fdf0ef;border:1px solid #f5c6c2;border-radius:8px;padding:.65rem .9rem;font-size:.83rem;color:var(--red);margin-bottom:1rem}
+.err-box.on{display:flex}
+.err-box svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;flex-shrink:0}
+.btn-primary{width:100%;padding:.88rem;background:var(--g-mid);color:white;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:600;cursor:pointer;transition:background .2s,box-shadow .2s,transform .1s}
+.btn-primary:hover{background:var(--g-accent);box-shadow:0 6px 18px rgba(74,144,80,.3)}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary .spin{display:none;width:17px;height:17px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+.btn-primary.loading .btn-txt{display:none}
+.btn-primary.loading .spin{display:block}
+
+/* ── APP SHELL ── */
+#app{display:none;height:100vh;flex-direction:column}
+.topnav{height:54px;background:var(--g-deep);display:flex;align-items:center;justify-content:space-between;padding:0 1.2rem;flex-shrink:0;z-index:200}
+.tn-l{display:flex;align-items:center;gap:.7rem}
+.tn-ico{width:34px;height:34px;background:var(--g-accent);border-radius:9px;display:grid;place-items:center}
+.tn-ico svg{width:18px;height:18px;fill:white}
+.tn-name{font-family:'DM Serif Display',serif;font-size:1.3rem;color:white}
+.tn-r{display:flex;align-items:center;gap:.8rem}
+.tn-badge{display:flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.08);border-radius:50px;padding:.3rem .9rem .3rem .4rem}
+.tn-av{width:28px;height:28px;background:var(--g-accent);border-radius:50%;display:grid;place-items:center;font-size:.72rem;font-weight:700;color:white}
+.tn-un{color:white;font-size:.82rem;font-weight:500}
+.tn-rl{color:rgba(255,255,255,.4);font-size:.7rem}
+.btn-out{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:7px;color:white;padding:.35rem .85rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.78rem;transition:background .2s}
+.btn-out:hover{background:rgba(255,255,255,.16)}
+.app-body{display:flex;flex:1;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:220px;background:white;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;z-index:100}
+.nav-sec{padding:1rem .8rem .3rem}
+.nav-sec-title{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:0 .5rem;margin-bottom:.3rem}
+.nav-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:500;color:var(--muted);transition:background .15s,color .15s;margin-bottom:1px}
+.nav-item svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;flex-shrink:0}
+.nav-item:hover{background:var(--g-pale);color:var(--g-mid)}
+.nav-item.active{background:var(--g-pale);color:var(--g-mid);font-weight:600}
+.nav-item.active svg{stroke:var(--g-accent)}
+.nav-badge{margin-left:auto;background:var(--g-accent);color:white;font-size:.62rem;font-weight:700;padding:.1rem .4rem;border-radius:50px}
+.nav-badge.red{background:var(--red)}
+
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.section{display:none;flex-direction:column;flex:1}
+.section.active{display:flex}
+.pg-hdr{padding:1.3rem 1.8rem .8rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.pg-hdr h2{font-family:'DM Serif Display',serif;font-size:1.6rem}
+.pg-hdr p{color:var(--muted);font-size:.83rem;margin-top:.1rem}
+.hdr-acts{display:flex;gap:.5rem}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.48rem .9rem;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.81rem;font-weight:500;border:1.5px solid var(--border);background:white;color:var(--txt);transition:all .15s;white-space:nowrap}
+.btn:hover{border-color:var(--g-accent);background:var(--g-pale)}
+.btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.btn.green{background:var(--g-mid);color:white;border-color:var(--g-mid)}
+.btn.green:hover{background:var(--g-accent);border-color:var(--g-accent)}
+.btn.green svg{stroke:white}
+.btn.red{background:var(--red-pale);color:var(--red);border-color:#fecaca}
+.btn.red:hover{background:#fecaca}
+
+/* ── TABLES ── */
+.tbl-wrap{background:white;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:0 1.8rem 1.8rem}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+thead{background:var(--cream)}
+th{padding:.65rem 1rem;text-align:left;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:.7rem 1rem;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--g-pale)}
+.badge{display:inline-flex;align-items:center;gap:.3rem;padding:.18rem .55rem;border-radius:50px;font-size:.7rem;font-weight:600}
+.badge.g{background:var(--g-pale);color:var(--g-mid)}
+.badge.a{background:var(--amber-pale);color:var(--amber)}
+.badge.r{background:var(--red-pale);color:var(--red)}
+.badge.b{background:var(--blue-pale);color:var(--blue)}
+
+/* ── FORMS ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.form-group{display:flex;flex-direction:column;gap:.35rem}
+.form-group label{font-size:.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.form-group input,.form-group select,.form-group textarea{padding:.65rem .85rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.87rem}
+.form-group textarea{resize:vertical;min-height:70px}
+.form-card{background:white;border:1px solid var(--border);border-radius:12px;padding:1.3rem;margin:0 1.8rem 1.2rem}
+.form-card h3{font-size:.93rem;font-weight:600;margin-bottom:.9rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)}
+
+/* ── DASHBOARD ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;padding:0 1.8rem 1rem}
+.kpi{background:white;border:1px solid var(--border);border-radius:12px;padding:1.1rem;animation:fadeUp .4s ease both}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+.kpi-ico{width:34px;height:34px;border-radius:9px;display:grid;place-items:center}
+.kpi-ico svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.kpi-ico.g{background:var(--g-pale);color:var(--g-accent)}
+.kpi-ico.a{background:var(--amber-pale);color:var(--amber)}
+.kpi-ico.b{background:var(--blue-pale);color:var(--blue)}
+.kpi-ico.r{background:var(--red-pale);color:var(--red)}
+.kpi-val{font-family:'DM Serif Display',serif;font-size:1.9rem;line-height:1}
+.kpi-lbl{font-size:.78rem;color:var(--muted)}
+
+/* ── MAP ── */
+.map-tb{padding:.7rem 1rem;background:white;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.7rem;flex-shrink:0}
+.map-wrap{flex:1;position:relative}
+#map{width:100%;height:100%}
+.map-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.96);border:2px dashed var(--g-accent);border-radius:16px;padding:2rem 2.5rem;text-align:center;z-index:500;min-width:300px}
+.map-hint.hidden{display:none}
+.map-hint h3{font-size:1rem;font-weight:600;margin-bottom:.4rem}
+.map-hint p{color:var(--muted);font-size:.83rem;margin-bottom:1rem}
+.map-hint .hint-sub{font-size:.72rem;color:var(--muted);margin-top:.7rem}
+.map-hint .hint-sub code{background:var(--cream);padding:.1rem .3rem;border-radius:4px;font-family:monospace;font-size:.7rem}
+.pp-panel{position:absolute;right:10px;top:10px;z-index:400;background:white;border-radius:11px;box-shadow:var(--sh);width:240px;display:none}
+.pp-panel.on{display:block}
+.pp-hdr{background:var(--g-mid);color:white;padding:.7rem .9rem;display:flex;align-items:center;justify-content:space-between;border-radius:11px 11px 0 0}
+.pp-hdr h4{font-size:.87rem;font-weight:600}
+.pp-close{background:none;border:none;color:white;cursor:pointer;font-size:1rem;line-height:1}
+.pp-body{padding:.8rem .9rem}
+.pp-row{display:flex;justify-content:space-between;padding:.3rem 0;border-bottom:1px solid var(--border);font-size:.8rem}
+.pp-row:last-child{border-bottom:none}
+.pp-row .lbl{color:var(--muted)}
+.pp-row .val{font-weight:500}
+.map-legend{position:absolute;bottom:24px;left:10px;z-index:400;background:rgba(255,255,255,.92);border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);padding:.5rem .7rem;font-size:.72rem}
+.bm-btn{padding:.3rem .65rem;border-radius:6px;font-size:.75rem;font-weight:500;border:1.5px solid var(--border);background:white;cursor:pointer;color:var(--muted);transition:all .15s}
+.bm-btn.active{background:var(--g-mid);color:white;border-color:var(--g-mid)}
+.lo-overlay{position:absolute;inset:0;background:rgba(245,242,235,.85);display:none;align-items:center;justify-content:center;z-index:600;flex-direction:column;gap:.8rem}
+.lo-overlay.on{display:flex}
+.lo-spin{width:36px;height:36px;border:3px solid var(--cream-dark);border-top-color:var(--g-accent);border-radius:50%;animation:spin .8s linear infinite}
+
+/* ── STOCKAGE ── */
+.cave-building{border:3px solid var(--g-deep);border-radius:10px;background:#f8faf8;padding:1rem;position:relative;min-width:480px}
+.cave-label{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--g-deep);color:white;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .8rem;border-radius:50px}
+.cave-allee{height:26px;background:var(--cream-dark);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin:5px 0;border:1px dashed #ccc}
+.cave-row{display:flex;gap:5px;margin-bottom:5px;align-items:center}
+.cave-row-lbl{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;width:20px;text-align:center;flex-shrink:0}
+.cave-cell{flex:1;min-width:68px;height:68px;border:2px solid var(--border);border-radius:8px;background:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px;transition:transform .12s,box-shadow .12s,border-color .15s;position:relative;overflow:hidden}
+.cave-cell:hover{transform:scale(1.05);box-shadow:0 4px 12px rgba(26,46,28,.15);border-color:var(--g-accent)}
+.cave-cell.empty{background:#fafafa;border-style:dashed}
+.cave-cell.empty:hover{background:var(--g-pale)}
+.cave-cell.selected{outline:3px solid var(--g-accent);outline-offset:2px;transform:scale(1.07);z-index:10}
+.cell-bar{position:absolute;top:0;left:0;right:0;height:5px;border-radius:6px 6px 0 0}
+.cell-var{font-size:.62rem;font-weight:700;color:var(--txt);text-align:center;line-height:1.2;margin-top:6px}
+.cell-lot{font-size:.58rem;color:var(--muted);text-align:center}
+.cell-palox{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--g-mid);line-height:1}
+.cell-plbl{font-size:.52rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.cell-add{color:var(--cream-dark);font-size:1.3rem;line-height:1}
+
+/* ── FICHES ── */
+.fiche-card{background:white;border:2px solid var(--border);border-radius:12px;padding:.85rem 1rem;cursor:pointer;position:relative;overflow:hidden;transition:all .15s}
+.fiche-card:hover{border-color:var(--g-accent);box-shadow:0 4px 16px rgba(0,0,0,.1);transform:translateY(-1px)}
+.fiche-top-bar{position:absolute;top:0;left:0;right:0;height:5px;border-radius:10px 10px 0 0}
+.fiche-variety{font-weight:700;font-size:.88rem;color:var(--txt)}
+.fiche-lot{font-size:.7rem;color:var(--muted);margin-top:.1rem}
+.fiche-date{font-size:.65rem;color:var(--muted);margin-top:.08rem}
+.fiche-palox{font-family:'DM Serif Display',serif;font-size:1.5rem;color:var(--g-mid);line-height:1;text-align:right}
+.fiche-plbl{font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;text-align:right}
+
+/* ── PLANNING ── */
+.plan-nav{padding:.8rem 1.5rem;background:white;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.8rem;flex-shrink:0}
+.plan-date-display{font-family:'DM Serif Display',serif;font-size:1.2rem;min-width:240px;text-align:center}
+.plan-grid{display:grid;grid-template-columns:80px 1fr;flex:1;overflow-y:auto}
+.plan-hour{background:white;border-right:1px solid var(--border);border-bottom:1px solid var(--cream-dark);padding:.5rem .7rem;font-size:.75rem;font-weight:600;color:var(--muted);display:flex;align-items:flex-start;justify-content:flex-end;position:sticky;left:0;min-height:64px}
+.plan-slot{border-bottom:1px solid var(--cream-dark);padding:.4rem .6rem;min-height:64px;background:white;transition:background .15s;position:relative}
+.plan-slot:hover{background:var(--g-pale)}
+.plan-slot.has-rdv{background:white}
+.plan-add-btn{width:100%;height:100%;min-height:48px;border:1.5px dashed var(--border);border-radius:8px;background:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.75rem;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:.3rem;transition:all .15s}
+.plan-add-btn:hover{border-color:var(--g-accent);color:var(--g-accent);background:var(--g-pale)}
+.rdv-card{background:var(--g-pale);border:1.5px solid var(--g-accent);border-radius:8px;padding:.5rem .7rem;cursor:pointer;transition:all .15s;position:relative}
+.rdv-card:hover{box-shadow:0 3px 10px rgba(74,144,80,.2);transform:translateY(-1px)}
+.rdv-card.a-confirmer{background:var(--amber-pale);border-color:var(--amber)}
+.rdv-client{font-weight:700;font-size:.83rem;color:var(--txt)}
+.rdv-detail{font-size:.72rem;color:var(--muted);margin-top:.15rem}
+.rdv-badges{display:flex;gap:.3rem;margin-top:.3rem;flex-wrap:wrap}
+.rdv-del{position:absolute;top:.3rem;right:.3rem;background:none;border:none;cursor:pointer;color:var(--muted);font-size:.8rem;opacity:0;transition:opacity .15s}
+.rdv-card:hover .rdv-del{opacity:1}
+
+/* ── BASE DE DONNÉES TABS ── */
+.db-tabs{display:flex;gap:.3rem;padding:.8rem 1.5rem .3rem;background:var(--cream);flex-shrink:0}
+.db-tab{padding:.5rem 1.1rem;border-radius:8px 8px 0 0;border:1.5px solid var(--border);border-bottom:none;background:var(--cream-dark);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;color:var(--muted);transition:all .15s}
+.db-tab.active{background:white;color:var(--g-mid);font-weight:600;border-color:var(--border)}
+.db-panel{display:none;flex:1;overflow-y:auto;background:white;border:1.5px solid var(--border);border-radius:0 10px 10px 10px;margin:0 1.5rem 1.5rem;padding:1.2rem}
+.db-panel.active{display:block}
+
+/* ── SEARCH BAR ── */
+.search-bar{position:relative;margin-bottom:1rem}
+.search-bar input{padding:.6rem .9rem .6rem 2.2rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;width:100%;outline:none}
+.search-bar input:focus{border-color:var(--g-accent);box-shadow:0 0 0 3px rgba(74,144,80,.1)}
+.search-bar .si{position:absolute;left:.7rem;top:50%;transform:translateY(-50%);width:15px;height:15px;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round}
+.autocomplete-list{position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid var(--border);border-radius:8px;box-shadow:var(--sh);z-index:100;max-height:200px;overflow-y:auto;margin-top:2px}
+.autocomplete-item{padding:.55rem .9rem;font-size:.85rem;cursor:pointer;transition:background .1s}
+.autocomplete-item:hover{background:var(--g-pale);color:var(--g-mid)}
+
+/* ── PALETTE ── */
+.palette-row{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.3rem}
+.palette-sw{width:26px;height:26px;border-radius:6px;cursor:pointer;border:2.5px solid transparent;transition:transform .1s,border-color .15s;flex-shrink:0}
+.palette-sw:hover{transform:scale(1.15)}
+.palette-sw.sel{border-color:var(--g-deep);transform:scale(1.1)}
+
+/* ── MODAL ── */
+.modal-ov{position:fixed;inset:0;background:rgba(26,46,28,.35);backdrop-filter:blur(3px);z-index:9000;display:none;align-items:center;justify-content:center;padding:1rem}
+.modal-ov.on{display:flex}
+.modal{background:white;border-radius:16px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(26,46,28,.2);overflow:hidden;animation:fadeUp .25s ease both;max-height:92vh;display:flex;flex-direction:column}
+.modal-hdr{background:var(--g-deep);color:white;padding:.9rem 1.2rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-hdr h3{font-size:.97rem;font-weight:600}
+.modal-close{background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:1.2rem;line-height:1}
+.modal-close:hover{color:white}
+.modal-body{padding:1.2rem;overflow-y:auto;flex:1}
+.modal-foot{padding:.85rem 1.2rem;border-top:1px solid var(--border);display:flex;gap:.5rem;justify-content:flex-end;flex-shrink:0}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--g-deep);color:white;padding:.6rem 1.3rem;border-radius:50px;font-size:.83rem;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:opacity .3s;opacity:0;pointer-events:none}
+
+/* ── INSERT BANNER ── */
+.insert-banner{display:none;background:var(--g-mid);color:white;padding:.55rem 1.2rem;align-items:center;gap:1rem;font-size:.83rem;flex-shrink:0}
+.insert-banner.on{display:flex}
+
+/* ── CELL PREVIEW ── */
+.cell-prev{border-radius:10px;border:3px solid var(--border);padding:.9rem 1rem;margin-bottom:1.1rem;position:relative;overflow:hidden;transition:border-color .2s;display:flex;align-items:flex-start;justify-content:space-between}
+.cell-prev .cp-bar{position:absolute;top:0;left:0;right:0;height:5px;border-radius:6px 6px 0 0}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){#login-page{grid-template-columns:1fr}.lp-left{display:none}.sidebar{display:none}}
+
+    /* ── BDD Tabs ── */
+    .bdd-tab { padding:.5rem 1.1rem;border:1px solid transparent;border-bottom:none;border-radius:7px 7px 0 0;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;color:var(--text-muted);background:white;transition:all .15s;margin-top:.4rem; }
+    .bdd-tab:hover { background:var(--green-pale);color:var(--green-mid); }
+    .bdd-tab.active { background:var(--green-mid);color:white;font-weight:600;border-color:var(--green-mid); }
+    .bdd-panel { display:none;flex-direction:column;overflow-y:auto; }
+    .bdd-panel.active { display:flex; }
+    .sub-tab { padding:.3rem .8rem;border:1px solid var(--border);border-radius:50px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:500;color:var(--text-muted);background:white;transition:all .15s; }
+    .sub-tab:hover { background:var(--green-pale);color:var(--green-mid); }
+    .sub-tab.active { background:var(--green-mid);color:white;border-color:var(--green-mid); }
+
+    /* ── Planning ── */
+    .plan-row { display:flex;align-items:stretch;min-height:64px;border-bottom:1px solid var(--border); }
+    .plan-row:hover { background:#fafffe; }
+    .plan-time { width:72px;flex-shrink:0;padding:.6rem .5rem;text-align:center;font-size:.78rem;font-weight:700;color:var(--text-muted);border-right:2px solid var(--border);display:flex;align-items:center;justify-content:center;background:var(--cream); }
+    .plan-slot { flex:1;padding:.5rem .8rem;cursor:pointer;display:flex;align-items:center;transition:background .15s; }
+    .plan-slot:hover { background:var(--green-pale); }
+    .plan-slot.empty { color:var(--cream-dark);font-size:.8rem; }
+    .plan-slot.empty:hover { color:var(--green-accent); }
+    .rdv-card { background:white;border:2px solid var(--green-accent);border-radius:10px;padding:.6rem .9rem;width:100%;display:flex;align-items:center;gap:.8rem;box-shadow:0 2px 8px rgba(74,144,80,.12); }
+    .rdv-card.pending { border-color:var(--amber);background:#fffbf0; }
+    .rdv-card-left { flex:1;min-width:0; }
+    .rdv-client { font-weight:700;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .rdv-detail { font-size:.75rem;color:var(--text-muted);margin-top:.1rem; }
+    .rdv-badges { display:flex;gap:.3rem;margin-top:.3rem;flex-wrap:wrap; }
+    .rdv-badge { font-size:.65rem;font-weight:600;padding:.1rem .45rem;border-radius:50px; }
+    .rdv-badge.lave { background:var(--blue-pale);color:var(--blue); }
+    .rdv-badge.pending { background:var(--amber-pale);color:var(--amber); }
+    .rdv-badge.camion { background:var(--green-pale);color:var(--green-mid); }
+
+  </style>
+<body>
+
+<!-- ══════════ LOGIN ══════════ -->
+<div id="login-page">
+  <div class="lp-left">
+    <div class="lp-brand">
+      <div class="lp-row">
+        <div class="lp-ico"><svg viewBox="0 0 24 24"><path d="M12 2C8 2 4 5.5 4 10c0 6 8 12 8 12s8-6 8-12c0-4.5-4-8-8-8z"/><circle cx="12" cy="10" r="3" fill="rgba(255,255,255,.4)"/></svg></div>
+        <span class="lp-name">Traç'Agri</span>
+      </div>
+      <div class="lp-tag">Traçabilité agricole</div>
+    </div>
+    <div class="lp-tagline">
+      <h2>La traçabilité,<br/><em>simplifiée</em><br/>du champ à la table.</h2>
+      <p>Gérez, suivez et certifiez vos productions agricoles en toute transparence.</p>
+    </div>
+    <div class="lp-stats">
+      <div><div class="lp-sn">100%</div><div class="lp-sl">Traçable</div></div>
+      <div><div class="lp-sn">SHP</div><div class="lp-sl">Import Shape</div></div>
+      <div><div class="lp-sn">Multi</div><div class="lp-sl">Utilisateurs</div></div>
+    </div>
+  </div>
+  <div class="lp-right">
+    <div class="lp-card">
+      <h1>Connexion</h1>
+      <p class="sub">Accédez à votre espace Traç'Agri</p>
+      <div class="err-box" id="err-box">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="err-txt">Identifiants incorrects.</span>
+      </div>
+      <div class="f-grp">
+        <label class="f-lbl" for="un">Email</label>
+        <div class="f-wrap">
+          <input type="email" id="un" placeholder="vous@exemple.fr" autocomplete="email"/>
+          <svg class="f-ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </div>
+      </div>
+      <div class="f-grp">
+        <label class="f-lbl" for="pw">Mot de passe</label>
+        <div class="f-wrap">
+          <input type="password" id="pw" placeholder="••••••••" autocomplete="current-password"/>
+          <svg class="f-ico" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <button class="eye-btn" id="eye-btn" type="button">
+            <svg id="eye-ico" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-login">
+        <span class="btn-txt">Se connecter</span>
+        <span class="spin"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ APP ══════════ -->
+<div id="app">
+  <nav class="topnav">
+    <div class="tn-l">
+      <div class="tn-ico"><svg viewBox="0 0 24 24"><path d="M12 2C8 2 4 5.5 4 10c0 6 8 12 8 12s8-6 8-12c0-4.5-4-8-8-8z"/></svg></div>
+      <span class="tn-name">Traç'Agri</span>
+    </div>
+    <div class="tn-r">
+      <div class="tn-badge">
+        <div class="tn-av" id="tn-av">–</div>
+        <div><div class="tn-un" id="tn-un">–</div><div class="tn-rl" id="tn-rl">–</div></div>
+      </div>
+      <button class="btn-out" id="btn-out">Déconnexion</button>
+    </div>
+  </nav>
+  <div class="app-body">
+    <aside class="sidebar">
+      <div class="nav-sec">
+        <div class="nav-sec-title">Principal</div>
+        <div class="nav-item active" data-s="dashboard"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Tableau de bord</div>
+        <div class="nav-item" data-s="planning"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Planning</div>
+        <div class="nav-item" data-s="cartographie"><svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Cartographie</div>
+      </div>
+      <div class="nav-sec">
+        <div class="nav-sec-title">Gestion</div>
+        <div class="nav-item" data-s="stockage"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>Stockage frigos</div>
+        <div class="nav-item" data-s="parcelles"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Parcelles</div>
+        <div class="nav-item" data-s="interventions"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Interventions</div>
+      </div>
+      <div class="nav-sec">
+        <div class="nav-sec-title">Base de données</div>
+        <div class="nav-item" data-s="bdd"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>Base de données</div>
+      </div>
+      <div class="nav-sec">
+        <div class="nav-sec-title">Documents</div>
+        <div class="nav-item" data-s="documents"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Registres & Docs</div>
+      </div>
+    </aside>
+    <main class="main">
+
+      <!-- ── DASHBOARD ── -->
+      <div class="section active" id="s-dashboard">
+        <div class="pg-hdr">
+          <div><h2 id="dash-greet">Bonjour 👋</h2><p>Aperçu de votre exploitation</p></div>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi"><div class="kpi-top"><div class="kpi-ico g"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div></div><div class="kpi-val" id="kpi-parcelles">8</div><div class="kpi-lbl">Parcelles</div></div>
+          <div class="kpi" style="animation-delay:.05s"><div class="kpi-top"><div class="kpi-ico a"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div></div><div class="kpi-val" id="kpi-clients">0</div><div class="kpi-lbl">Clients</div></div>
+          <div class="kpi" style="animation-delay:.1s"><div class="kpi-top"><div class="kpi-ico b"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div></div><div class="kpi-val" id="kpi-rdv">0</div><div class="kpi-lbl">RDV aujourd'hui</div></div>
+          <div class="kpi" style="animation-delay:.15s"><div class="kpi-top"><div class="kpi-ico r"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div></div><div class="kpi-val" id="kpi-palox">0</div><div class="kpi-lbl">Palox en stock</div></div>
+        </div>
+        <div style="padding:0 1.8rem 1.8rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:1.1rem;">
+            <div style="font-weight:600;font-size:.93rem;margin-bottom:.8rem;padding-bottom:.6rem;border-bottom:1px solid var(--border);">Prochains RDV</div>
+            <div id="dash-rdv-list" style="font-size:.83rem;color:var(--muted);">Aucun RDV aujourd'hui</div>
+          </div>
+          <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:1.1rem;">
+            <div style="font-weight:600;font-size:.93rem;margin-bottom:.8rem;padding-bottom:.6rem;border-bottom:1px solid var(--border);">Accès rapide</div>
+            <div style="display:flex;flex-direction:column;gap:.5rem;">
+              <button class="btn" onclick="goSection('planning')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Ouvrir le planning</button>
+              <button class="btn" onclick="goSection('bdd')"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>Base de données</button>
+              <button class="btn" onclick="goSection('stockage')"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>Gestion stockage</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PLANNING ── -->
+      <div class="section" id="s-planning">
+        <div class="plan-nav">
+          <button class="btn" id="plan-prev"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <div class="plan-date-display" id="plan-date-lbl">Chargement…</div>
+          <button class="btn" id="plan-next"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+          <button class="btn green" id="plan-today">Aujourd'hui</button>
+          <span style="margin-left:auto;font-size:.78rem;color:var(--muted);">Cliquez sur un créneau pour ajouter un RDV</span>
+        </div>
+        <div class="plan-grid" id="plan-grid"></div>
+      </div>
+
+      <!-- ── CARTOGRAPHIE ── -->
+      <div class="section" id="s-cartographie" style="overflow:hidden;">
+        <div class="map-tb">
+          <label class="btn green" style="cursor:pointer;">
+            <svg viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+            Importer Shapefile (.zip)
+            <input type="file" id="shp-input" accept=".zip" style="display:none"/>
+          </label>
+          <div style="width:1px;height:22px;background:var(--border);"></div>
+          <span style="font-size:.79rem;color:var(--muted);">Fond :</span>
+          <button class="bm-btn active" data-bm="osm">Carte</button>
+          <button class="bm-btn" data-bm="satellite">Satellite</button>
+          <button class="bm-btn" data-bm="topo">Topo</button>
+          <button class="btn" id="btn-clear-map" style="margin-left:auto;"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Effacer</button>
+          <button class="btn" id="btn-zoom-fit"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>Ajuster</button>
+        </div>
+        <div class="map-wrap">
+          <div id="map"></div>
+          <div class="map-hint" id="map-hint">
+            <svg viewBox="0 0 24 24" style="width:40px;height:40px;fill:none;stroke:var(--g-accent);stroke-width:1.5;stroke-linecap:round;display:block;margin:0 auto .8rem"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            <h3>Aucune parcelle importée</h3>
+            <p>Importez un Shapefile ZIP pour afficher vos parcelles</p>
+            <label class="btn green" style="cursor:pointer;display:inline-flex;">
+              <svg viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/></svg>Choisir un fichier .zip
+              <input type="file" accept=".zip" style="display:none" onchange="document.getElementById('shp-input').files=this.files;handleShp(this)"/>
+            </label>
+            <div class="hint-sub">ZIP contenant : <code>.shp</code> <code>.dbf</code> <code>.prj</code> <code>.shx</code></div>
+          </div>
+          <div class="pp-panel" id="pp-panel">
+            <div class="pp-hdr"><h4 id="pp-name">Parcelle</h4><button class="pp-close" onclick="document.getElementById('pp-panel').classList.remove('on')">✕</button></div>
+            <div class="pp-body" id="pp-body"></div>
+          </div>
+          <div class="map-legend" id="map-legend" style="display:none">
+            <div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;color:var(--muted)">Légende</div>
+            <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.2rem;"><div style="width:10px;height:10px;background:rgba(74,144,80,.3);border:1.5px solid #4a9050;border-radius:2px;"></div><span>Parcelle</span></div>
+            <div style="display:flex;align-items:center;gap:.4rem;"><div style="width:10px;height:10px;background:rgba(74,144,80,.55);border:1.5px solid #2d5a30;border-radius:2px;"></div><span>Sélectionnée</span></div>
+          </div>
+          <div class="lo-overlay" id="map-loading"><div class="lo-spin"></div><span style="font-size:.83rem;color:var(--muted)">Chargement…</span></div>
+        </div>
+      </div>
+
+      <!-- ── STOCKAGE ── -->
+      <div class="section" id="s-stockage">
+        <div class="pg-hdr">
+          <div><h2>Stockage — Frigos</h2><p>Plan de stockage pommes de terre par frigo</p></div>
+          <div class="hdr-acts">
+            <button class="btn green" id="btn-add-frigo"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Ajouter un frigo</button>
+          </div>
+        </div>
+        <!-- Tabs frigos -->
+        <div style="padding:0 1.5rem;border-bottom:1px solid var(--border);background:white;display:flex;align-items:center;gap:.3rem;overflow-x:auto;flex-shrink:0;">
+          <div id="frigo-tabs" style="display:flex;gap:.3rem;padding:.5rem 0;"></div>
+        </div>
+        <div style="display:flex;flex:1;overflow:hidden;">
+          <!-- Plan -->
+          <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+            <div style="padding:.6rem 1rem;background:white;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.7rem;flex-shrink:0;flex-wrap:wrap;" id="frigo-tb">
+              <span style="font-size:.79rem;color:var(--muted);">Rangées :</span>
+              <button class="btn" onclick="changeRows(-1)">−</button><span id="rows-val" style="font-weight:700;min-width:18px;text-align:center;">4</span><button class="btn" onclick="changeRows(1)">+</button>
+              <div style="width:1px;height:20px;background:var(--border);"></div>
+              <span style="font-size:.79rem;color:var(--muted);">Cases/rangée :</span>
+              <button class="btn" onclick="changeCols(-1)">−</button><span id="cols-val" style="font-weight:700;min-width:18px;text-align:center;">8</span><button class="btn" onclick="changeCols(1)">+</button>
+              <span id="frigo-occ" style="font-size:.79rem;color:var(--muted);margin-left:auto;">0/0 cases</span>
+              <button class="btn" id="btn-rename-frigo"><svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Renommer</button>
+              <button class="btn red" id="btn-del-frigo"><svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Supprimer</button>
+            </div>
+            <!-- Insert banner -->
+            <div class="insert-banner" id="ins-banner">
+              <span>🎯 <strong>Mode insertion</strong> — Case sélectionnée : <span id="ins-cell-lbl">–</span></span>
+              <span>Cliquez maintenant sur une fiche ➜</span>
+              <button class="btn" style="margin-left:auto;background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:white;" onclick="cancelInsert()">Annuler</button>
+            </div>
+            <div style="overflow:auto;flex:1;padding:1.2rem;" id="frigo-plan-wrap">
+              <div id="frigo-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:.8rem;color:var(--muted);">
+                <svg viewBox="0 0 24 24" style="width:44px;height:44px;fill:none;stroke:var(--cream-dark);stroke-width:1.5;stroke-linecap:round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                <p style="font-size:.88rem;">Aucun frigo — créez-en un !</p>
+                <button class="btn green" onclick="document.getElementById('btn-add-frigo').click()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Créer un frigo</button>
+              </div>
+              <div id="frigo-grid" style="display:none;">
+                <div class="cave-building">
+                  <div class="cave-label" id="frigo-lbl">Frigo</div>
+                  <div style="text-align:center;margin-bottom:8px"><span style="font-size:.67rem;font-weight:700;text-transform:uppercase;color:var(--muted);background:var(--cream-dark);padding:.15rem .7rem;border-radius:4px">▼ Entrée</span></div>
+                  <div id="frigo-rows-cont"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Side panel -->
+          <div style="width:290px;border-left:1px solid var(--border);background:var(--cream);display:flex;flex-direction:column;overflow:hidden;">
+            <div style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0;">
+              <button id="tab-fiches" onclick="switchStockTab('fiches')" style="flex:1;padding:.6rem;border:none;background:var(--g-mid);color:white;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;">Fiches lots</button>
+              <button id="tab-recap"  onclick="switchStockTab('recap')"  style="flex:1;padding:.6rem;border:none;background:var(--cream-dark);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;cursor:pointer;">Récap</button>
+            </div>
+            <!-- Fiches -->
+            <div id="panel-fiches" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+              <div style="padding:.7rem .8rem;flex-shrink:0;border-bottom:1px solid var(--border);">
+                <button class="btn green" style="width:100%;" onclick="openFicheModal(null)"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Créer une fiche lot</button>
+              </div>
+              <div id="fiches-list" style="overflow-y:auto;flex:1;padding:.7rem;display:flex;flex-direction:column;gap:.5rem;"></div>
+            </div>
+            <!-- Récap -->
+            <div id="panel-recap" style="display:none;flex-direction:column;overflow-y:auto;padding:.8rem;gap:.6rem;">
+              <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:.8rem;">
+                <div style="font-weight:600;font-size:.85rem;margin-bottom:.6rem;">Statistiques</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+                  <div style="background:var(--cream);border-radius:7px;padding:.55rem;text-align:center;"><div style="font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--g-mid);" id="st-occ">0</div><div style="font-size:.67rem;color:var(--muted);">Cases occ.</div></div>
+                  <div style="background:var(--cream);border-radius:7px;padding:.55rem;text-align:center;"><div style="font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--g-mid);" id="st-palox">0</div><div style="font-size:.67rem;color:var(--muted);">Palox total</div></div>
+                  <div style="background:var(--cream);border-radius:7px;padding:.55rem;text-align:center;"><div style="font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--g-mid);" id="st-var">0</div><div style="font-size:.67rem;color:var(--muted);">Variétés</div></div>
+                  <div style="background:var(--cream);border-radius:7px;padding:.55rem;text-align:center;"><div style="font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--g-mid);" id="st-frigos">0</div><div style="font-size:.67rem;color:var(--muted);">Frigos</div></div>
+                </div>
+              </div>
+              <div id="recap-lots" style="display:flex;flex-direction:column;gap:.5rem;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PARCELLES ── -->
+      <div class="section" id="s-parcelles">
+        <div class="pg-hdr"><div><h2>Mes parcelles</h2><p>Parcellaire et suivi cultural</p></div><div class="hdr-acts"><button class="btn green"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nouvelle parcelle</button></div></div>
+        <div class="tbl-wrap"><table><thead><tr><th>Nom</th><th>Surface (ha)</th><th>Culture</th><th>Certification</th><th>Statut</th></tr></thead><tbody>
+          <tr><td><strong>Rosée Nord</strong></td><td>18,4</td><td>Blé tendre</td><td>HVE</td><td><span class="badge a">À vérifier</span></td></tr>
+          <tr><td><strong>Grand Champ Est</strong></td><td>32,1</td><td>Maïs grain</td><td>–</td><td><span class="badge g">Conforme</span></td></tr>
+          <tr><td><strong>La Bruyère</strong></td><td>12,7</td><td>Colza</td><td>AB</td><td><span class="badge g">Conforme</span></td></tr>
+          <tr><td><strong>Pré du Moulin</strong></td><td>8,3</td><td>Tournesol</td><td>–</td><td><span class="badge g">Conforme</span></td></tr>
+        </tbody></table></div>
+      </div>
+
+      <!-- ── INTERVENTIONS ── -->
+      <div class="section" id="s-interventions">
+        <div class="pg-hdr"><div><h2>Interventions</h2><p>Suivi des opérations terrain</p></div><div class="hdr-acts"><button class="btn green"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nouvelle</button></div></div>
+        <div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Parcelle</th><th>Type</th><th>Produit</th><th>Dose</th><th>Statut</th></tr></thead><tbody>
+          <tr><td>22/05/2026</td><td>Rosée Nord</td><td><span class="badge r">Phyto</span></td><td>Fongicide A12</td><td>1.2 L/ha</td><td><span class="badge a">À contrôler</span></td></tr>
+          <tr><td>19/05/2026</td><td>Grand Champ Est</td><td><span class="badge a">Ferti</span></td><td>Urée 46%</td><td>80 kg/ha</td><td><span class="badge g">OK</span></td></tr>
+        </tbody></table></div>
+      </div>
+
+      <!-- ── BASE DE DONNÉES ── -->
+      <div class="section" id="s-bdd">
+        <div class="pg-hdr">
+          <div><h2>Base de données</h2><p>Clients, stocks, intrants, produits phytosanitaires</p></div>
+        </div>
+        <div class="db-tabs">
+          <div class="db-tab active" data-tab="clients">👥 Clients</div>
+          <div class="db-tab" data-tab="stocks">📦 Stocks / Variétés</div>
+          <div class="db-tab" data-tab="intrants">🌱 Intrants</div>
+          <div class="db-tab" data-tab="phyto">🧪 Phytosanitaires</div>
+        </div>
+
+        <!-- CLIENTS -->
+        <div class="db-panel active" id="panel-clients">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <div class="search-bar" style="flex:1;margin:0;margin-right:1rem;">
+              <svg class="si" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="search-clients" placeholder="Rechercher un client…" oninput="filterClients(this.value)" style="padding-left:2.2rem;"/>
+            </div>
+            <button class="btn green" onclick="openClientModal(null)"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Ajouter un client</button>
+          </div>
+          <div id="clients-table-wrap">
+            <table><thead><tr><th>Nom</th><th>Adresse</th><th>CP</th><th>Ville</th><th>Pays</th><th>Actions</th></tr></thead>
+            <tbody id="clients-tbody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;">Aucun client enregistré</td></tr></tbody></table>
+          </div>
+        </div>
+
+        <!-- STOCKS / VARIÉTÉS -->
+        <div class="db-panel" id="panel-stocks">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <div class="search-bar" style="flex:1;margin:0;margin-right:1rem;">
+              <svg class="si" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="search-stocks" placeholder="Rechercher une variété…" oninput="filterStocks(this.value)" style="padding-left:2.2rem;"/>
+            </div>
+            <button class="btn green" onclick="openLotModal(null)"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Ajouter</button>
+          </div>
+          <table><thead><tr><th>Variété</th><th>Lot</th><th>Type chargement</th><th>Type palette</th><th>Actions</th></tr></thead>
+          <tbody id="stocks-tbody"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem;">Aucun enregistrement</td></tr></tbody></table>
+        </div>
+
+        <!-- INTRANTS -->
+        <div class="db-panel" id="panel-intrants">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+              <button class="btn active-cat" data-cat="all" onclick="filterIntrants('all',this)">Tous</button>
+              <button class="btn" data-cat="Semences" onclick="filterIntrants('Semences',this)">🌾 Semences</button>
+              <button class="btn" data-cat="Plants PDT" onclick="filterIntrants('Plants PDT',this)">🥔 Plants PDT</button>
+              <button class="btn" data-cat="Engrais" onclick="filterIntrants('Engrais',this)">💊 Engrais</button>
+              <button class="btn" data-cat="Fertilisation" onclick="filterIntrants('Fertilisation',this)">🌿 Fertilisation</button>
+            </div>
+            <button class="btn green" onclick="openIntrantModal(null)"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Ajouter</button>
+          </div>
+          <table><thead><tr><th>Nom</th><th>Catégorie</th><th>Espèce/Référence</th><th>Fournisseur</th><th>Stock</th><th>Actions</th></tr></thead>
+          <tbody id="intrants-tbody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;">Aucun intrant enregistré</td></tr></tbody></table>
+        </div>
+
+        <!-- PHYTO -->
+        <div class="db-panel" id="panel-phyto">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.7rem;">
+            <div class="search-bar" style="flex:1;min-width:200px;margin:0;margin-right:.7rem;position:relative;">
+              <svg class="si" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="search-phyto" placeholder="Rechercher dans EPHY ou saisir un produit…" oninput="searchPhyto(this.value)" style="padding-left:2.2rem;"/>
+              <div id="ephy-results" class="autocomplete-list" style="display:none;"></div>
+            </div>
+            <button class="btn green" onclick="openPhytoModal(null)"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Saisie manuelle</button>
+          </div>
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:.8rem;padding:.5rem .7rem;background:var(--blue-pale);border-radius:7px;">
+            💡 La barre de recherche interroge la base EPHY (phytosanitaires homologués France). Sélectionnez un résultat pour l'ajouter automatiquement, ou utilisez "Saisie manuelle".
+          </div>
+          <table><thead><tr><th>Produit</th><th>N° AMM</th><th>Substance active</th><th>Usage</th><th>DAR (j)</th><th>Source</th><th>Actions</th></tr></thead>
+          <tbody id="phyto-tbody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem;">Aucun produit enregistré</td></tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- ── DOCUMENTS ── -->
+      <div class="section" id="s-documents">
+        <div class="pg-hdr"><div><h2>Registres & Documents</h2><p>Certificats, attestations et exports</p></div><div class="hdr-acts"><button class="btn green"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Importer</button></div></div>
+        <div class="tbl-wrap"><table><thead><tr><th>Document</th><th>Type</th><th>Date</th><th>Actions</th></tr></thead><tbody>
+          <tr><td>📄 Registre phytosanitaire 2025-2026</td><td>Registre</td><td>24/05/2026</td><td><button class="btn">Télécharger</button></td></tr>
+          <tr><td>📄 Plan de Fumure 2026</td><td>PPF</td><td>01/03/2026</td><td><button class="btn">Télécharger</button></td></tr>
+        </tbody></table></div>
+      </div>
+
+    
+      <!-- ── BASE DE DONNÉES ── -->
+      <div class="section" id="s-bdd">
+        <div class="page-hdr">
+          <div><h2>Base de données</h2><p>Clients, variétés, intrants, produits phyto</p></div>
+        </div>
+        <!-- Onglets BDD -->
+        <div style="padding:0 1.8rem;border-bottom:1px solid var(--border);background:white;display:flex;gap:.3rem;flex-shrink:0;">
+          <button class="bdd-tab active" data-tab="clients" onclick="switchBddTab('clients')">👥 Clients</button>
+          <button class="bdd-tab" data-tab="lots" onclick="switchBddTab('lots')">🥔 Variétés & Lots</button>
+          <button class="bdd-tab" data-tab="intrants" onclick="switchBddTab('intrants')">🌱 Intrants</button>
+          <button class="bdd-tab" data-tab="phyto" onclick="switchBddTab('phyto')">🧪 Phytosanitaires</button>
+        </div>
+
+        <!-- Clients -->
+        <div class="bdd-panel active" id="bdd-clients">
+          <div style="padding:1rem 1.8rem;display:flex;align-items:center;justify-content:space-between;">
+            <input type="text" id="search-clients" placeholder="🔍 Rechercher un client…" oninput="filterTable('clients')" style="padding:.5rem .9rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;width:280px;outline:none;" onfocus="this.style.borderColor='var(--green-accent)'" onblur="this.style.borderColor='var(--border)'"/>
+            <button class="btn-sm primary" onclick="openClientModal()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nouveau client</button>
+          </div>
+          <div style="padding:0 1.8rem 1.8rem;">
+            <div class="tbl-wrap"><table id="tbl-clients">
+              <thead><tr><th>Nom</th><th>Adresse</th><th>CP</th><th>Ville</th><th>Pays</th><th>Actions</th></tr></thead>
+              <tbody id="tbody-clients"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem;">Aucun client enregistré</td></tr></tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- Lots -->
+        <div class="bdd-panel" id="bdd-lots">
+          <div style="padding:1rem 1.8rem;display:flex;align-items:center;justify-content:space-between;">
+            <input type="text" id="search-lots" placeholder="🔍 Rechercher…" oninput="filterTable('lots')" style="padding:.5rem .9rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;width:280px;outline:none;" onfocus="this.style.borderColor='var(--green-accent)'" onblur="this.style.borderColor='var(--border)'"/>
+            <button class="btn-sm primary" onclick="openLotModal()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nouveau lot</button>
+          </div>
+          <div style="padding:0 1.8rem 1.8rem;">
+            <div class="tbl-wrap"><table id="tbl-lots">
+              <thead><tr><th>Variété</th><th>N° Lot</th><th>Type chargement</th><th>Type palette</th><th>Actions</th></tr></thead>
+              <tbody id="tbody-lots"><tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:2rem;">Aucun lot enregistré</td></tr></tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- Intrants -->
+        <div class="bdd-panel" id="bdd-intrants">
+          <div style="padding:1rem 1.8rem;display:flex;align-items:center;justify-content:space-between;">
+            <input type="text" id="search-intrants" placeholder="🔍 Rechercher…" oninput="filterTable('intrants')" style="padding:.5rem .9rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;width:280px;outline:none;" onfocus="this.style.borderColor='var(--green-accent)'" onblur="this.style.borderColor='var(--border)'"/>
+            <button class="btn-sm primary" onclick="openIntrantModal()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nouvel intrant</button>
+          </div>
+          <!-- Sous-onglets -->
+          <div style="padding:0 1.8rem .5rem;display:flex;gap:.4rem;">
+            <button class="sub-tab active" data-sub="all" onclick="filterIntrants('all')">Tous</button>
+            <button class="sub-tab" data-sub="semences" onclick="filterIntrants('semences')">🌾 Semences</button>
+            <button class="sub-tab" data-sub="plants" onclick="filterIntrants('plants')">🥔 Plants PDT</button>
+            <button class="sub-tab" data-sub="engrais" onclick="filterIntrants('engrais')">🧪 Engrais</button>
+            <button class="sub-tab" data-sub="ferti" onclick="filterIntrants('ferti')">💧 Fertilisation</button>
+          </div>
+          <div style="padding:0 1.8rem 1.8rem;">
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>Nom</th><th>Catégorie</th><th>Fournisseur</th><th>Stock</th><th>Unité</th><th>Actions</th></tr></thead>
+              <tbody id="tbody-intrants"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem;">Aucun intrant enregistré</td></tr></tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- Phyto -->
+        <div class="bdd-panel" id="bdd-phyto">
+          <div style="padding:1rem 1.8rem;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;justify-content:space-between;">
+            <div style="display:flex;gap:.6rem;align-items:center;flex:1;">
+              <input type="text" id="search-phyto-ephy" placeholder="🔍 Rechercher sur EPHY (ex: Glyphosate)…" style="padding:.5rem .9rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;flex:1;outline:none;" onfocus="this.style.borderColor='var(--green-accent)'" onblur="this.style.borderColor='var(--border)'" oninput="searchEphy(this.value)"/>
+              <span style="font-size:.75rem;color:var(--text-muted);">ou</span>
+              <input type="text" id="search-phyto-local" placeholder="🔍 Filtrer ma liste…" oninput="filterTable('phyto')" style="padding:.5rem .9rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;width:200px;outline:none;" onfocus="this.style.borderColor='var(--green-accent)'" onblur="this.style.borderColor='var(--border)'"/>
+            </div>
+            <button class="btn-sm primary" onclick="openPhytoModal()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Saisie manuelle</button>
+          </div>
+          <!-- Résultats EPHY -->
+          <div id="ephy-results" style="display:none;margin:0 1.8rem .5rem;background:white;border:1px solid var(--border);border-radius:10px;max-height:200px;overflow-y:auto;"></div>
+          <div style="padding:0 1.8rem 1.8rem;">
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>Produit</th><th>N° AMM</th><th>Substance active</th><th>Usage</th><th>DAR (j)</th><th>Source</th><th>Actions</th></tr></thead>
+              <tbody id="tbody-phyto"><tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem;">Aucun produit enregistré</td></tr></tbody>
+            </table></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PLANNING ── -->
+      <div class="section" id="s-planning">
+        <div class="page-hdr">
+          <div><h2>Planning logistique</h2><p>Gestion des rendez-vous de chargement</p></div>
+          <div style="display:flex;align-items:center;gap:.6rem;">
+            <button class="btn-sm" onclick="changeDay(-1)">‹</button>
+            <span id="planning-date-label" style="font-weight:600;font-size:.9rem;min-width:160px;text-align:center;"></span>
+            <button class="btn-sm" onclick="changeDay(1)">›</button>
+            <button class="btn-sm" onclick="goToday()">Aujourd'hui</button>
+          </div>
+        </div>
+        <div id="planning-grid" style="padding:1rem 1.8rem 2rem;overflow-y:auto;flex:1;">
+          <!-- Generated by JS -->
+        </div>
+      </div>
+
+
+    </main>  </div>
+</div>
+
+<!-- ════ MODALS ════ -->
+
+<!-- Modal Frigo -->
+<div class="modal-ov" id="frigo-modal">
+  <div class="modal" style="max-width:360px;">
+    <div class="modal-hdr"><h3 id="frigo-modal-title">Nouveau frigo</h3><button class="modal-close" onclick="closeModal('frigo-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group" style="margin-bottom:.9rem;"><label>Nom du frigo</label><input type="text" id="fi-name" class="no-icon" placeholder="ex. Frigo Nord, Chambre froide 1…"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;">
+        <div class="form-group"><label>Cases/rangée</label><input type="number" id="fi-cols" class="no-icon" value="8" min="1" max="20"/></div>
+        <div class="form-group"><label>Rangées</label><input type="number" id="fi-rows" class="no-icon" value="4" min="1" max="26"/></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('frigo-modal')">Annuler</button><button class="btn green" id="frigo-save-btn" onclick="saveFrigo()">Créer</button></div>
+  </div>
+</div>
+
+<!-- Modal Fiche Lot -->
+<div class="modal-ov" id="fiche-modal">
+  <div class="modal">
+    <div class="modal-hdr"><h3 id="fiche-modal-title">Nouvelle fiche lot</h3><button class="modal-close" onclick="closeModal('fiche-modal')">✕</button></div>
+    <div class="modal-body">
+      <!-- Preview -->
+      <div class="cell-prev" id="fiche-prev" style="border-color:#ccc;">
+        <div id="fp-bar" class="cp-bar" style="background:#ccc;"></div>
+        <div style="margin-top:.3rem;">
+          <div id="fp-var" style="font-weight:700;font-size:1rem;">Variété</div>
+          <div id="fp-lot" style="font-size:.75rem;color:var(--muted);margin-top:.1rem;">N° lot</div>
+          <div id="fp-date" style="font-size:.68rem;color:var(--muted);margin-top:.05rem;">–</div>
+        </div>
+        <div style="text-align:right;">
+          <div id="fp-palox" style="font-family:'DM Serif Display',serif;font-size:2rem;color:var(--g-mid);line-height:1;">1</div>
+          <div style="font-size:.58rem;color:var(--muted);">palox/case</div>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1/-1"><label>Variété</label><input type="text" id="fiche-var" class="no-icon" placeholder="ex. Bintje, Agria, Monalisa…" oninput="updateFichePreview()"/></div>
+        <div class="form-group" style="grid-column:1/-1"><label>N° de lot / Parcelle</label><input type="text" id="fiche-lot" class="no-icon" placeholder="ex. LOT-2026-001 / Rosée Nord" oninput="updateFichePreview()"/></div>
+        <div class="form-group"><label>Palox par case</label><input type="number" id="fiche-palox" class="no-icon" value="1" min="1" max="99" oninput="updateFichePreview()"/></div>
+        <div class="form-group"><label>Date mise en frigo</label><input type="date" id="fiche-date" class="no-icon" oninput="updateFichePreview()"/></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Couleur</label><div class="palette-row" id="fiche-palette"></div></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn red" id="fiche-del-btn" style="display:none;" onclick="deleteFiche()">Supprimer</button>
+      <button class="btn" onclick="closeModal('fiche-modal')">Annuler</button>
+      <button class="btn green" id="fiche-save-btn" onclick="saveFiche()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Insertion case -->
+<div class="modal-ov" id="ins-modal">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-hdr"><h3 id="ins-modal-title">Insérer dans la case</h3><button class="modal-close" onclick="closeModal('ins-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="cell-prev" id="ins-prev" style="border-color:#ccc;margin-bottom:1rem;">
+        <div id="ip-bar" class="cp-bar" style="background:#ccc;"></div>
+        <div style="margin-top:.3rem;"><div id="ip-var" style="font-weight:700;font-size:1rem;"></div><div id="ip-lot" style="font-size:.75rem;color:var(--muted);margin-top:.1rem;"></div></div>
+        <div style="text-align:right;"><div id="ip-palox" style="font-family:'DM Serif Display',serif;font-size:1.9rem;color:var(--g-mid);line-height:1;"></div><div style="font-size:.58rem;color:var(--muted);">palox</div></div>
+      </div>
+      <div class="form-group">
+        <label>Palox pour cette case</label>
+        <div style="display:flex;align-items:center;gap:.8rem;margin-top:.3rem;">
+          <button class="btn" onclick="adjPalox(-1)" style="font-size:1.1rem;padding:.3rem .75rem;">−</button>
+          <span id="ins-palox-val" style="font-family:'DM Serif Display',serif;font-size:1.7rem;color:var(--g-mid);min-width:36px;text-align:center;">1</span>
+          <button class="btn" onclick="adjPalox(1)"  style="font-size:1.1rem;padding:.3rem .75rem;">+</button>
+        </div>
+      </div>
+      <div id="ins-warn" style="display:none;margin-top:.8rem;padding:.55rem .75rem;background:var(--amber-pale);border:1px solid #fde68a;border-radius:7px;font-size:.79rem;color:var(--amber);">⚠️ Case déjà occupée — elle sera remplacée.</div>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal('ins-modal')">Annuler</button><button class="btn green" id="ins-confirm-btn" onclick="confirmInsert()">✓ Insérer</button></div>
+  </div>
+</div>
+
+<!-- Modal Client -->
+<div class="modal-ov" id="client-modal">
+  <div class="modal">
+    <div class="modal-hdr"><h3 id="client-modal-title">Nouveau client</h3><button class="modal-close" onclick="closeModal('client-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1/-1"><label>Nom / Raison sociale</label><input type="text" id="cl-nom" class="no-icon" placeholder="ex. EARL Dupont, Coopérative du Nord…"/></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Adresse</label><input type="text" id="cl-adr" class="no-icon" placeholder="ex. 12 rue des Champs"/></div>
+        <div class="form-group"><label>Code postal</label><input type="text" id="cl-cp" class="no-icon" placeholder="ex. 59000"/></div>
+        <div class="form-group"><label>Ville</label><input type="text" id="cl-ville" class="no-icon" placeholder="ex. Lille"/></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Pays</label><input type="text" id="cl-pays" class="no-icon" value="France"/></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Téléphone (optionnel)</label><input type="text" id="cl-tel" class="no-icon" placeholder="ex. 03 20 00 00 00"/></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Email (optionnel)</label><input type="text" id="cl-email" class="no-icon" placeholder="ex. contact@earl-dupont.fr"/></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn red" id="cl-del-btn" style="display:none;" onclick="deleteClient()">Supprimer</button>
+      <button class="btn" onclick="closeModal('client-modal')">Annuler</button>
+      <button class="btn green" id="cl-save-btn" onclick="saveClient()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Lot/Stock -->
+<div class="modal-ov" id="lot-modal">
+  <div class="modal">
+    <div class="modal-hdr"><h3 id="lot-modal-title">Nouvelle variété / lot</h3><button class="modal-close" onclick="closeModal('lot-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1/-1"><label>Variété</label><input type="text" id="lt-var" class="no-icon" placeholder="ex. Bintje, Agria, Monalisa…"/></div>
+        <div class="form-group"><label>N° de lot</label><input type="text" id="lt-lot" class="no-icon" placeholder="ex. LOT-2026-001"/></div>
+        <div class="form-group"><label>Date récolte</label><input type="date" id="lt-date" class="no-icon"/></div>
+        <div class="form-group"><label>Type de chargement</label>
+          <select id="lt-charg" class="no-icon">
+            <option value="">– Sélectionner –</option>
+            <option>Vrac</option><option>Palox</option><option>Big-bag</option><option>Sac 25 kg</option><option>Sac 50 kg</option><option>Autre</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Type de palette</label>
+          <select id="lt-palette" class="no-icon">
+            <option value="">– Sélectionner –</option>
+            <option>Europe 80×120</option><option>Demi palette</option><option>Palette bois perdue</option><option>Palette plastique</option><option>Autre</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Quantité (T)</label><input type="number" id="lt-qte" class="no-icon" placeholder="0.0" min="0" step="0.1"/></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Observations</label><textarea id="lt-obs" class="no-icon" placeholder="Notes…"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn red" id="lt-del-btn" style="display:none;" onclick="deleteLot()">Supprimer</button>
+      <button class="btn" onclick="closeModal('lot-modal')">Annuler</button>
+      <button class="btn green" id="lt-save-btn" onclick="saveLot()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Intrant -->
+<div class="modal-ov" id="intrant-modal">
+  <div class="modal">
+    <div class="modal-hdr"><h3 id="intrant-modal-title">Nouvel intrant</h3><button class="modal-close" onclick="closeModal('intrant-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1/-1"><label>Nom du produit</label><input type="text" id="in-nom" class="no-icon" placeholder="ex. Semence Bintje certifiée…"/></div>
+        <div class="form-group"><label>Catégorie</label>
+          <select id="in-cat" class="no-icon" onchange="updateIntrantSub()">
+            <option value="">– Sélectionner –</option>
+            <option>Semences</option><option>Plants PDT</option><option>Engrais</option><option>Fertilisation</option><option>Autre</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Sous-catégorie</label><input type="text" id="in-scat" class="no-icon" placeholder="ex. Azote, Phosphore…"/></div>
+        <div class="form-group"><label>Espèce / Variété</label><input type="text" id="in-esp" class="no-icon" placeholder="ex. Solanum tuberosum…"/></div>
+        <div class="form-group"><label>Fournisseur</label><input type="text" id="in-four" class="no-icon" placeholder="ex. Limagrain, Yara…"/></div>
+        <div class="form-group"><label>N° lot / Réf.</label><input type="text" id="in-lot" class="no-icon" placeholder="ex. LOT-2026-A"/></div>
+        <div class="form-group"><label>Composition</label><input type="text" id="in-comp" class="no-icon" placeholder="ex. N46 / NPK 15-15-15…"/></div>
+        <div class="form-group"><label>Stock</label><input type="number" id="in-stock" class="no-icon" placeholder="0" min="0" step="0.1"/></div>
+        <div class="form-group"><label>Unité</label>
+          <select id="in-unit" class="no-icon">
+            <option>kg</option><option>T</option><option>L</option><option>sacs</option><option>palettes</option><option>unités</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn red" id="in-del-btn" style="display:none;" onclick="deleteIntrant()">Supprimer</button>
+      <button class="btn" onclick="closeModal('intrant-modal')">Annuler</button>
+      <button class="btn green" id="in-save-btn" onclick="saveIntrant()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Phyto -->
+<div class="modal-ov" id="phyto-modal">
+  <div class="modal">
+    <div class="modal-hdr"><h3 id="phyto-modal-title">Produit phytosanitaire</h3><button class="modal-close" onclick="closeModal('phyto-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1/-1"><label>Nom du produit</label><input type="text" id="ph-nom" class="no-icon" placeholder="ex. Roundup Pro 360…"/></div>
+        <div class="form-group"><label>N° AMM</label><input type="text" id="ph-amm" class="no-icon" placeholder="ex. 2110148"/></div>
+        <div class="form-group"><label>DAR (jours)</label><input type="number" id="ph-dar" class="no-icon" placeholder="ex. 21" min="0"/></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Substance(s) active(s)</label><input type="text" id="ph-sub" class="no-icon" placeholder="ex. Glyphosate 360 g/L"/></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Usage / Cible</label><input type="text" id="ph-usage" class="no-icon" placeholder="ex. Herbicide — Céréales"/></div>
+        <div class="form-group"><label>Dose homologuée</label><input type="text" id="ph-dose" class="no-icon" placeholder="ex. 3 L/ha"/></div>
+        <div class="form-group"><label>Unité de conditionnement</label><input type="text" id="ph-cond" class="no-icon" placeholder="ex. 20 L, 5 kg"/></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn red" id="ph-del-btn" style="display:none;" onclick="deletePhyto()">Supprimer</button>
+      <button class="btn" onclick="closeModal('phyto-modal')">Annuler</button>
+      <button class="btn green" id="ph-save-btn" onclick="savePhyto()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal RDV Planning -->
+<div class="modal-ov" id="rdv-modal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-hdr"><h3 id="rdv-modal-title">Nouveau rendez-vous</h3><button class="modal-close" onclick="closeModal('rdv-modal')">✕</button></div>
+    <div class="modal-body">
+      <div style="background:var(--g-pale);border:1px solid var(--g-accent);border-radius:8px;padding:.6rem .9rem;margin-bottom:1rem;font-size:.83rem;color:var(--g-mid);">
+        📅 <strong id="rdv-slot-lbl">–</strong>
+      </div>
+      <!-- Recherche client -->
+      <div class="form-group" style="margin-bottom:.9rem;position:relative;">
+        <label>Client</label>
+        <div style="position:relative;">
+          <svg style="position:absolute;left:.7rem;top:50%;transform:translateY(-50%);width:15px;height:15px;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="rdv-client-search" class="no-icon" style="padding-left:2.2rem;" placeholder="Rechercher un client…" oninput="searchRdvClient(this.value)" autocomplete="off"/>
+        </div>
+        <div id="rdv-client-results" class="autocomplete-list" style="display:none;position:absolute;z-index:200;left:0;right:0;"></div>
+        <input type="hidden" id="rdv-client-id"/>
+        <div id="rdv-client-info" style="display:none;margin-top:.4rem;padding:.4rem .7rem;background:var(--g-pale);border-radius:7px;font-size:.8rem;color:var(--g-mid);"></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label>Variété</label>
+          <select id="rdv-variete" class="no-icon"><option value="">– Sélectionner –</option></select>
+        </div>
+        <div class="form-group"><label>Type de chargement</label>
+          <select id="rdv-charg" class="no-icon">
+            <option value="">– Sélectionner –</option>
+            <option>Vrac</option><option>Palox</option><option>Big-bag</option><option>Sac 25 kg</option><option>Sac 50 kg</option><option>Autre</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Type de palette (opt.)</label>
+          <select id="rdv-palette" class="no-icon">
+            <option value="">– Aucune –</option>
+            <option>Europe 80×120</option><option>Demi palette</option><option>Palette bois perdue</option><option>Palette plastique</option><option>Autre</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Quantité (T ou palox)</label><input type="text" id="rdv-qte" class="no-icon" placeholder="ex. 24 T ou 12 palox"/></div>
+        <div class="form-group"><label>Nb de camions</label><input type="number" id="rdv-nb-camions" class="no-icon" value="1" min="1"/></div>
+        <div class="form-group" style="display:flex;flex-direction:row;align-items:center;gap:.7rem;padding-top:1.4rem;">
+          <input type="checkbox" id="rdv-lave" style="width:16px;height:16px;flex-shrink:0;"/>
+          <label for="rdv-lave" style="text-transform:none;font-size:.87rem;letter-spacing:0;cursor:pointer;">Lavé ✓</label>
+          <input type="checkbox" id="rdv-confirmer" style="width:16px;height:16px;flex-shrink:0;margin-left:.5rem;"/>
+          <label for="rdv-confirmer" style="text-transform:none;font-size:.87rem;letter-spacing:0;cursor:pointer;">À confirmer</label>
+        </div>
+        <div class="form-group" style="grid-column:1/-1"><label>Observation (visible par tous)</label><textarea id="rdv-obs" class="no-icon" placeholder="Notes visibles par tous les utilisateurs…"></textarea></div>
+        <div class="form-group" style="grid-column:1/-1;background:var(--blue-pale);border-radius:8px;padding:.8rem;border:1px solid #bfdbfe;">
+          <label style="color:var(--blue);">🔒 Note privée (visible uniquement par vous)</label>
+          <textarea id="rdv-note-privee" class="no-icon" style="background:white;" placeholder="Note personnelle confidentielle…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn red" id="rdv-del-btn" style="display:none;" onclick="deleteRdv()">Supprimer</button>
+      <button class="btn" onclick="closeModal('rdv-modal')">Annuler</button>
+      <button class="btn green" id="rdv-save-btn" onclick="saveRdv()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ════ SCRIPTS ════ -->
+<!-- ════ MODAL CLIENT ════ -->
+<div class="modal-overlay" id="client-modal">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-hdr"><h3 id="client-modal-title">Nouveau client</h3><button class="modal-close" onclick="closeModal('client-modal')">✕</button></div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;">
+        <div class="form-group" style="grid-column:1/-1"><label>Nom *</label><input type="text" id="c-nom" placeholder="Nom de l'entreprise ou du client"/></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Adresse</label><input type="text" id="c-adresse" placeholder="Rue, numéro…"/></div>
+        <div class="form-group"><label>Code postal</label><input type="text" id="c-cp" placeholder="75000"/></div>
+        <div class="form-group"><label>Ville</label><input type="text" id="c-ville" placeholder="Paris"/></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Pays</label><input type="text" id="c-pays" placeholder="France" value="France"/></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Téléphone</label><input type="text" id="c-tel" placeholder="+33 6 00 00 00 00"/></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Email</label><input type="text" id="c-email" placeholder="contact@entreprise.fr"/></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-danger" id="c-delete-btn" style="display:none;" onclick="deleteRecord('clients')">Supprimer</button>
+      <button class="btn-sm" onclick="closeModal('client-modal')">Annuler</button>
+      <button class="btn-sm primary" onclick="saveClient()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MODAL LOT ════ -->
+<div class="modal-overlay" id="lot-modal">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-hdr"><h3 id="lot-modal-title">Nouveau lot</h3><button class="modal-close" onclick="closeModal('lot-modal')">✕</button></div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;">
+        <div class="form-group" style="grid-column:1/-1"><label>Variété *</label><input type="text" id="l-variete" placeholder="ex. Bintje, Agria…"/></div>
+        <div class="form-group"><label>N° de lot</label><input type="text" id="l-lot" placeholder="LOT-2026-001"/></div>
+        <div class="form-group"><label>Type de chargement</label>
+          <select id="l-chargement"><option value="">-- Choisir --</option><option>Vrac</option><option>Big-bag</option><option>Sac 25kg</option><option>Sac 10kg</option><option>Sac 5kg</option><option>Filet</option><option>Palox</option><option>Autre</option></select>
+        </div>
+        <div class="form-group" style="grid-column:1/-1"><label>Type de palette</label>
+          <select id="l-palette"><option value="">-- Aucune --</option><option>Europe (80x120)</option><option>Américaine (100x120)</option><option>Demi-palette</option><option>Autre</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-danger" id="l-delete-btn" style="display:none;" onclick="deleteRecord('lots')">Supprimer</button>
+      <button class="btn-sm" onclick="closeModal('lot-modal')">Annuler</button>
+      <button class="btn-sm primary" onclick="saveLot()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MODAL INTRANT ════ -->
+<div class="modal-overlay" id="intrant-modal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-hdr"><h3 id="intrant-modal-title">Nouvel intrant</h3><button class="modal-close" onclick="closeModal('intrant-modal')">✕</button></div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;">
+        <div class="form-group" style="grid-column:1/-1"><label>Nom *</label><input type="text" id="i-nom" placeholder="ex. Semences Bintje certifiées"/></div>
+        <div class="form-group"><label>Catégorie</label>
+          <select id="i-cat"><option value="semences">Semences</option><option value="plants">Plants PDT</option><option value="engrais">Engrais</option><option value="ferti">Fertilisation</option><option value="autre">Autre</option></select>
+        </div>
+        <div class="form-group"><label>Fournisseur</label><input type="text" id="i-fournisseur" placeholder="Nom du fournisseur"/></div>
+        <div class="form-group"><label>Lot / Référence</label><input type="text" id="i-lot" placeholder="Réf. fournisseur"/></div>
+        <div class="form-group"><label>Stock</label><input type="number" id="i-stock" placeholder="0" min="0"/></div>
+        <div class="form-group"><label>Unité</label>
+          <select id="i-unite"><option>kg</option><option>t</option><option>L</option><option>unité</option><option>sac</option><option>palette</option></select>
+        </div>
+        <div class="form-group" style="grid-column:1/-1"><label>Composition / Notes</label><input type="text" id="i-compo" placeholder="N-P-K, description…"/></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-danger" id="i-delete-btn" style="display:none;" onclick="deleteRecord('intrants')">Supprimer</button>
+      <button class="btn-sm" onclick="closeModal('intrant-modal')">Annuler</button>
+      <button class="btn-sm primary" onclick="saveIntrant()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MODAL PHYTO ════ -->
+<div class="modal-overlay" id="phyto-modal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-hdr"><h3 id="phyto-modal-title">Produit phytosanitaire</h3><button class="modal-close" onclick="closeModal('phyto-modal')">✕</button></div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;">
+        <div class="form-group" style="grid-column:1/-1"><label>Nom du produit *</label><input type="text" id="p-nom" placeholder="ex. Roundup"/></div>
+        <div class="form-group"><label>N° AMM</label><input type="text" id="p-amm" placeholder="ex. 2110148"/></div>
+        <div class="form-group"><label>DAR (jours)</label><input type="number" id="p-dar" placeholder="0" min="0"/></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Substance active</label><input type="text" id="p-substance" placeholder="ex. Glyphosate 360 g/L"/></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Usage / Culture cible</label><input type="text" id="p-usage" placeholder="ex. Herbicide céréales"/></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-danger" id="p-delete-btn" style="display:none;" onclick="deleteRecord('phyto')">Supprimer</button>
+      <button class="btn-sm" onclick="closeModal('phyto-modal')">Annuler</button>
+      <button class="btn-sm primary" onclick="savePhyto()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MODAL RDV PLANNING ════ -->
+<div class="modal-overlay" id="rdv-modal">
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-hdr"><h3 id="rdv-modal-title">Nouveau RDV</h3><button class="modal-close" onclick="closeModal('rdv-modal')">✕</button></div>
+    <div class="modal-body">
+      <!-- Recherche client -->
+      <div class="form-group" style="margin-bottom:1rem;position:relative;">
+        <label>Client *</label>
+        <input type="text" id="rdv-client-search" placeholder="🔍 Tapez pour chercher un client…" oninput="searchRdvClient(this.value)" autocomplete="off" style="width:100%;padding:.65rem .9rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;" onfocus="this.style.borderColor='var(--green-accent)'" onblur="setTimeout(()=>document.getElementById('rdv-client-dropdown').style.display='none',200)"/>
+        <div id="rdv-client-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:100;max-height:160px;overflow-y:auto;"></div>
+        <input type="hidden" id="rdv-client-id"/>
+        <div id="rdv-client-selected" style="display:none;margin-top:.4rem;padding:.5rem .8rem;background:var(--green-pale);border-radius:7px;font-size:.82rem;color:var(--green-mid);font-weight:500;"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;">
+        <div class="form-group"><label>Date</label><input type="date" id="rdv-date"/></div>
+        <div class="form-group"><label>Heure</label>
+          <select id="rdv-heure"></select>
+        </div>
+        <div class="form-group"><label>Variété</label><input type="text" id="rdv-variete" placeholder="ex. Agria"/></div>
+        <div class="form-group"><label>Type de chargement</label>
+          <select id="rdv-chargement"><option value="">-- Choisir --</option><option>Vrac</option><option>Big-bag</option><option>Sac 25kg</option><option>Sac 10kg</option><option>Sac 5kg</option><option>Filet</option><option>Palox</option><option>Autre</option></select>
+        </div>
+        <div class="form-group"><label>Type de palette</label>
+          <select id="rdv-palette"><option value="">-- Aucune --</option><option>Europe (80x120)</option><option>Américaine (100x120)</option><option>Demi-palette</option><option>Autre</option></select>
+        </div>
+        <div class="form-group"><label>Quantité (T)</label><input type="text" id="rdv-quantite" placeholder="ex. 24 T"/></div>
+        <div class="form-group"><label>Nombre de camions</label><input type="number" id="rdv-camions" value="1" min="1"/></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Observation (visible par tous)</label><textarea id="rdv-obs" rows="2" style="width:100%;padding:.6rem .9rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;resize:vertical;" placeholder="Notes partagées…"></textarea></div>
+        <div class="form-group" style="grid-column:1/-1"><label>🔒 Note privée (visible uniquement par vous)</label><textarea id="rdv-note-privee" rows="2" style="width:100%;padding:.6rem .9rem;border:1.5px solid var(--amber);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;resize:vertical;background:#fffbf0;" placeholder="Note personnelle…"></textarea></div>
+        <div class="form-group" style="display:flex;gap:1.5rem;align-items:center;grid-column:1/-1;">
+          <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.85rem;font-weight:500;text-transform:none;letter-spacing:0;">
+            <input type="checkbox" id="rdv-lave" style="width:16px;height:16px;accent-color:var(--green-accent);"/> Lavé
+          </label>
+          <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.85rem;font-weight:500;text-transform:none;letter-spacing:0;">
+            <input type="checkbox" id="rdv-confirmer" style="width:16px;height:16px;accent-color:var(--amber);"/> À confirmer
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-danger" id="rdv-delete-btn" style="display:none;" onclick="deleteRdv()">Supprimer</button>
+      <button class="btn-sm" onclick="closeModal('rdv-modal')">Annuler</button>
+      <button class="btn-sm primary" onclick="saveRdv()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
+<script src="https://unpkg.com/shpjs@4.0.4/dist/shp.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+
+/* ══════════════════ SUPABASE ══════════════════ */
+const SUPA_URL = 'https://owodtyqnqychkpxqatwh.supabase.co';
+const SUPA_KEY = 'sb_publishable_1QufpCnmGbc_c36eI_ERZA_YNYcKnNb';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+let currentUserId = null;
+
+/* ══════════════════ AUTH ══════════════════ */
+(async()=>{ const {data:{session}} = await sb.auth.getSession(); if(session) await boot(session.user); })();
+sb.auth.onAuthStateChange(async(ev,sess)=>{ if(ev==='SIGNED_OUT'||(!sess&&ev!=='INITIAL_SESSION')){document.getElementById('app').style.display='none';document.getElementById('login-page').style.display='grid';}});
+
+document.getElementById('eye-btn').addEventListener('click',()=>{
+  const p=document.getElementById('pw'),h=p.type==='password';p.type=h?'text':'password';
+  document.getElementById('eye-ico').innerHTML=h?`<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`:`<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+});
+document.getElementById('btn-login').addEventListener('click', async()=>{
+  const email=document.getElementById('un').value.trim(), pw=document.getElementById('pw').value;
+  const eb=document.getElementById('err-box'); eb.classList.remove('on');
+  if(!email||!pw){document.getElementById('err-txt').textContent='Remplissez tous les champs.';eb.classList.add('on');return;}
+  const btn=document.getElementById('btn-login'); btn.classList.add('loading');
+  const {data,error}=await sb.auth.signInWithPassword({email,password:pw});
+  btn.classList.remove('loading');
+  if(error){document.getElementById('err-txt').textContent=error.message.includes('Invalid')?'Email ou mot de passe incorrect.':error.message;eb.classList.add('on');return;}
+  await boot(data.user);
+});
+['un','pw'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('btn-login').click();}));
+
+async function boot(user){
+  currentUserId=user.id;
+  const {data:p}=await sb.from('profiles').select('display_name,role').eq('id',user.id).single();
+  const dn=p?.display_name||user.email.split('@')[0], role=p?.role||'Utilisateur';
+  const ini=dn.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('login-page').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('tn-av').textContent=ini;
+  document.getElementById('tn-un').textContent=dn;
+  document.getElementById('tn-rl').textContent=role;
+  document.getElementById('dash-greet').textContent=`Bonjour, ${dn.split(' ')[0]} 👋`;
+  initMap();
+  await Promise.all([loadFrigos(),loadFiches(),loadAllDbData()]);
+  renderPlanning();
+  loadRdv(planDate);
+  updateDashboard();
+}
+document.getElementById('btn-out').addEventListener('click',async()=>{
+  await sb.auth.signOut();
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-page').style.display='grid';
+  document.getElementById('un').value='';document.getElementById('pw').value='';
+});
+
+/* ══════════════════ NAV ══════════════════ */
+function goSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.s===id));
+  if(id==='cartographie')setTimeout(()=>map&&map.invalidateSize(),100);
+}
+document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>goSection(n.dataset.s)));
+
+/* ══════════════════ MAP ══════════════════ */
+let map=null,basemap=null,shpLayer=null,mapInited=false;
+const BM={osm:{url:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',attr:'© OpenStreetMap'},satellite:{url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',attr:'© Esri'},topo:{url:'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',attr:'© OpenTopoMap'}};
+function initMap(){if(mapInited)return;mapInited=true;map=L.map('map',{zoomControl:true}).setView([46.8,2.3],6);setBM('osm');}
+function setBM(k){const b=BM[k];if(!b)return;if(basemap)map.removeLayer(basemap);basemap=L.tileLayer(b.url,{attribution:b.attr,maxZoom:19}).addTo(map);document.querySelectorAll('.bm-btn').forEach(x=>x.classList.toggle('active',x.dataset.bm===k));}
+document.querySelectorAll('.bm-btn').forEach(b=>b.addEventListener('click',()=>{if(map)setBM(b.dataset.bm);}));
+document.getElementById('shp-input').addEventListener('change',function(){handleShp(this);});
+function handleShp(inp){
+  const f=inp.files[0];if(!f)return;
+  if(!f.name.toLowerCase().endsWith('.zip')){alert('Fichier ZIP requis.');return;}
+  if(!map)initMap();
+  document.getElementById('map-loading').classList.add('on');document.getElementById('map-hint').classList.add('hidden');
+  const r=new FileReader();
+  r.onload=async function(e){try{displayGeoJSON(await shp(e.target.result));}catch(err){alert('Impossible de lire le Shapefile.');document.getElementById('map-hint').classList.remove('hidden');}finally{document.getElementById('map-loading').classList.remove('on');inp.value='';}};
+  r.readAsArrayBuffer(f);
+}
+function displayGeoJSON(gj){
+  if(shpLayer){map.removeLayer(shpLayer);shpLayer=null;}
+  const feats=Array.isArray(gj)?gj.flatMap(g=>g.features||[]):(gj.features||[gj]);
+  if(!feats.length){alert('Aucune géométrie.');return;}
+  let sel=null;
+  shpLayer=L.geoJSON({type:'FeatureCollection',features:feats},{
+    style:()=>({fillColor:'#4a9050',fillOpacity:.35,color:'#2d5a30',weight:2,opacity:.9}),
+    onEachFeature:(ft,ly)=>{
+      ly.on('click',e=>{L.DomEvent.stopPropagation(e);if(sel)sel.setStyle({fillColor:'#4a9050',fillOpacity:.35,color:'#2d5a30',weight:2});sel=ly;ly.setStyle({fillColor:'#2d5a30',fillOpacity:.55,color:'#1a2e1c',weight:3});showPI(ft);});
+      ly.on('mouseover',()=>{if(ly!==sel)ly.setStyle({fillOpacity:.5});});
+      ly.on('mouseout', ()=>{if(ly!==sel)ly.setStyle({fillOpacity:.35});});
+    }
+  }).addTo(map);
+  map.fitBounds(shpLayer.getBounds(),{padding:[20,20]});
+  document.getElementById('map-legend').style.display='block';
+}
+function showPI(ft){
+  const p=ft.properties||{},ks=Object.keys(p);
+  document.getElementById('pp-name').textContent=p.NOM||p.nom||p.NAME||p.name||'Parcelle';
+  document.getElementById('pp-body').innerHTML=ks.length?ks.slice(0,10).map(k=>`<div class="pp-row"><span class="lbl">${k}</span><span class="val">${p[k]??'–'}</span></div>`).join(''):'<p style="color:var(--muted);font-size:.8rem">Aucun attribut.</p>';
+  document.getElementById('pp-panel').classList.add('on');
+}
+document.getElementById('btn-clear-map').addEventListener('click',()=>{if(shpLayer){map.removeLayer(shpLayer);shpLayer=null;}document.getElementById('map-legend').style.display='none';document.getElementById('pp-panel').classList.remove('on');document.getElementById('map-hint').classList.remove('hidden');});
+document.getElementById('btn-zoom-fit').addEventListener('click',()=>{if(shpLayer)map.fitBounds(shpLayer.getBounds(),{padding:[20,20]});else if(map)map.setView([46.8,2.3],6);});
+
+/* ══════════════════ UTILS ══════════════════ */
+const PALETTE=['#e74c3c','#e67e22','#f1c40f','#2ecc71','#1abc9c','#3498db','#9b59b6','#e91e63','#00bcd4','#8bc34a','#ff5722','#607d8b','#795548','#ff9800','#4caf50'];
+const ROWS='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';setTimeout(()=>t.style.opacity='0',2500);}
+function closeModal(id){document.getElementById(id).classList.remove('on');}
+function openModal(id){document.getElementById(id).classList.add('on');}
+document.querySelectorAll('.modal-ov').forEach(ov=>ov.addEventListener('click',function(e){if(e.target===this)this.classList.remove('on');}));
+
+/* ══════════════════ STOCKAGE ══════════════════ */
+let frigosData={},activeF=null,fichesData=[],editFigoId=null,editFicheId=null,fichColor=PALETTE[0],insCell=null,insFiche=null,insPalox=1;
+
+async function loadFrigos(){
+  const {data:fr}=await sb.from('frigos').select('*').order('created_at');
+  const {data:cl}=await sb.from('cave_cells').select('*');
+  frigosData={};
+  (fr||[]).forEach(f=>{frigosData[f.id]={id:f.id,name:f.name,cols:f.cols||8,rows:f.rows||4,cells:{}};});
+  (cl||[]).forEach(c=>{if(frigosData[c.frigo_id])frigosData[c.frigo_id].cells[c.cell_id]={variety:c.variety,lot:c.lot,palox:c.palox,color:c.color,date:c.date};});
+  renderFrigoTabs();
+  const ids=Object.keys(frigosData);
+  if(ids.length)setFrigo(ids[0]);else showFrigoEmpty();
+  updateStockStats();
+}
+
+function showFrigoEmpty(){document.getElementById('frigo-empty').style.display='flex';document.getElementById('frigo-grid').style.display='none';document.getElementById('frigo-tb').style.visibility='hidden';document.getElementById('frigo-tabs').innerHTML='';}
+
+function renderFrigoTabs(){
+  const c=document.getElementById('frigo-tabs');
+  c.innerHTML=Object.values(frigosData).map(f=>`<button onclick="setFrigo('${f.id}')" id="ftab-${f.id}" style="padding:.4rem .9rem;border-radius:6px 6px 0 0;border:1px solid var(--border);border-bottom:none;background:white;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;color:var(--muted);white-space:nowrap;transition:all .15s;">❄️ ${f.name}</button>`).join('');
+  if(activeF)styleFTab(activeF);
+}
+function styleFTab(id){document.querySelectorAll('#frigo-tabs button').forEach(b=>{const on=b.id===`ftab-${id}`;b.style.background=on?'var(--g-mid)':'white';b.style.color=on?'white':'var(--muted)';b.style.fontWeight=on?'600':'500';});}
+function setFrigo(id){
+  activeF=id;styleFTab(id);
+  const f=frigosData[id];
+  document.getElementById('frigo-empty').style.display='none';document.getElementById('frigo-grid').style.display='block';document.getElementById('frigo-tb').style.visibility='visible';
+  document.getElementById('frigo-lbl').textContent=f.name;document.getElementById('cols-val').textContent=f.cols;document.getElementById('rows-val').textContent=f.rows;
+  renderGrid(f);updateOcc(f);
+}
+function renderGrid(f){
+  const c=document.getElementById('frigo-rows-cont');c.innerHTML='';
+  for(let r=0;r<f.rows;r++){
+    if(r>0&&r%2===0){const a=document.createElement('div');a.className='cave-allee';a.textContent='— Allée de circulation —';c.appendChild(a);}
+    const row=document.createElement('div');row.className='cave-row';
+    const lbl=document.createElement('div');lbl.className='cave-row-lbl';lbl.textContent=ROWS[r%26];row.appendChild(lbl);
+    for(let col=1;col<=f.cols;col++){
+      const cid=`${f.id}_${ROWS[r%26]}${col}`;
+      const cell=document.createElement('div');cell.className='cave-cell';cell.dataset.cell=cid;
+      cell.onclick=()=>onCellClick(cid);
+      cell.oncontextmenu=(e)=>{e.preventDefault();promptClear(cid);};
+      const d=f.cells[cid];if(d)renderCellEl(cell,d);else renderEmptyCellEl(cell);
+      row.appendChild(cell);
+    }
+    c.appendChild(row);
+  }
+}
+function renderCellEl(el,d){
+  el.classList.remove('empty','selected');
+  el.innerHTML=`<div class="cell-bar" style="background:${d.color}"></div><div class="cell-var">${d.variety}</div><div class="cell-lot">${d.lot||''}</div><div class="cell-palox">${d.palox}</div><div class="cell-plbl">palox</div>`;
+  el.title=`${d.variety}\n${d.lot||''}\n${d.palox} palox\nClic droit pour vider`;
+}
+function renderEmptyCellEl(el){el.classList.add('empty');el.classList.remove('selected');el.innerHTML='<span class="cell-add">+</span>';el.title='Cliquer pour sélectionner';}
+function onCellClick(cid){
+  if(insCell!==null){highlightCell(insCell,false);insCell=cid;highlightCell(cid,true);updateInsBanner();return;}
+  insCell=cid;highlightCell(cid,true);updateInsBanner();switchStockTab('fiches');
+}
+function highlightCell(cid,on){const el=document.querySelector(`[data-cell="${cid}"]`);if(!el)return;el.classList.toggle('selected',on);}
+function updateInsBanner(){
+  const b=document.getElementById('ins-banner');
+  if(!insCell){b.classList.remove('on');return;}
+  const sid=insCell.split('_').slice(1).join('_')||insCell.split('_')[1]||insCell;
+  document.getElementById('ins-cell-lbl').textContent=insCell.replace(insCell.split('_')[0]+'_','');
+  b.classList.add('on');
+}
+function cancelInsert(){if(insCell)highlightCell(insCell,false);insCell=null;insFiche=null;document.getElementById('ins-banner').classList.remove('on');}
+function switchStockTab(t){
+  const isF=t==='fiches';
+  document.getElementById('panel-fiches').style.display=isF?'flex':'none';
+  document.getElementById('panel-recap').style.display=isF?'none':'flex';
+  document.getElementById('tab-fiches').style.background=isF?'var(--g-mid)':'var(--cream-dark)';document.getElementById('tab-fiches').style.color=isF?'white':'var(--muted)';
+  document.getElementById('tab-recap').style.background=isF?'var(--cream-dark)':'var(--g-mid)';document.getElementById('tab-recap').style.color=isF?'var(--muted)':'white';
+}
+async function changeCols(d){if(!activeF)return;const f=frigosData[activeF],nv=Math.max(1,Math.min(20,f.cols+d));if(nv===f.cols)return;f.cols=nv;document.getElementById('cols-val').textContent=nv;await sb.from('frigos').update({cols:nv}).eq('id',activeF);renderGrid(f);updateOcc(f);}
+async function changeRows(d){if(!activeF)return;const f=frigosData[activeF],nv=Math.max(1,Math.min(26,f.rows+d));if(nv===f.rows)return;f.rows=nv;document.getElementById('rows-val').textContent=nv;await sb.from('frigos').update({rows:nv}).eq('id',activeF);renderGrid(f);updateOcc(f);}
+function updateOcc(f){const t=f.cols*f.rows,o=Object.keys(f.cells).length;document.getElementById('frigo-occ').textContent=`${o}/${t} cases`;}
+function updateStockStats(){
+  const all=Object.values(frigosData);let occ=0,pal=0;const vars=new Set();
+  all.forEach(f=>Object.values(f.cells).forEach(c=>{occ++;pal+=Number(c.palox||0);if(c.variety)vars.add(c.variety);}));
+  document.getElementById('st-occ').textContent=occ;document.getElementById('st-palox').textContent=pal;document.getElementById('st-var').textContent=vars.size;document.getElementById('st-frigos').textContent=all.length;
+  document.getElementById('kpi-palox').textContent=pal;
+  const cm={};all.forEach(f=>Object.values(f.cells).forEach(c=>{if(c.variety)cm[c.variety]=c.color;}));
+  const byV={};all.forEach(f=>Object.entries(f.cells).forEach(([cell,d])=>{if(!byV[d.variety])byV[d.variety]=[];byV[d.variety].push({cell,frigo:frigosData[d.variety]?.name||'',palox:Number(d.palox||0),color:d.color,lot:d.lot});}));
+  document.getElementById('recap-lots').innerHTML=Object.entries(byV).map(([v,cs])=>{const tp=cs.reduce((s,c)=>s+c.palox,0);const col=cm[v];return `<div style="background:white;border:1px solid var(--border);border-radius:9px;padding:.65rem .8rem;border-left:4px solid ${col}"><div style="font-weight:700;font-size:.85rem;">${v}</div><div style="font-size:.73rem;color:var(--muted)">${cs.length} case(s) · ${tp} palox</div></div>`;}).join('');
+}
+
+/* Frigo modal */
+document.getElementById('btn-add-frigo').addEventListener('click',()=>{editFigoId=null;document.getElementById('frigo-modal-title').textContent='Nouveau frigo';document.getElementById('frigo-save-btn').textContent='Créer';document.getElementById('fi-name').value='';document.getElementById('fi-cols').value=8;document.getElementById('fi-rows').value=4;openModal('frigo-modal');setTimeout(()=>document.getElementById('fi-name').focus(),100);});
+document.getElementById('btn-rename-frigo').addEventListener('click',()=>{if(!activeF)return;const f=frigosData[activeF];editFigoId=activeF;document.getElementById('frigo-modal-title').textContent='Modifier le frigo';document.getElementById('frigo-save-btn').textContent='Enregistrer';document.getElementById('fi-name').value=f.name;document.getElementById('fi-cols').value=f.cols;document.getElementById('fi-rows').value=f.rows;openModal('frigo-modal');});
+async function saveFrigo(){
+  const name=document.getElementById('fi-name').value.trim(),cols=Math.max(1,Math.min(20,+document.getElementById('fi-cols').value||8)),rows=Math.max(1,Math.min(26,+document.getElementById('fi-rows').value||4));
+  if(!name){alert('Saisissez un nom.');return;}
+  const btn=document.getElementById('frigo-save-btn');btn.textContent='…';btn.disabled=true;
+  if(editFigoId){await sb.from('frigos').update({name,cols,rows}).eq('id',editFigoId);frigosData[editFigoId].name=name;frigosData[editFigoId].cols=cols;frigosData[editFigoId].rows=rows;renderFrigoTabs();setFrigo(editFigoId);}
+  else{const {data,error}=await sb.from('frigos').insert({name,cols,rows}).select().single();if(error){alert('Erreur: '+error.message);btn.textContent='Créer';btn.disabled=false;return;}frigosData[data.id]={id:data.id,name,cols,rows,cells:{}};renderFrigoTabs();setFrigo(data.id);}
+  updateStockStats();btn.textContent=editFigoId?'Enregistrer':'Créer';btn.disabled=false;closeModal('frigo-modal');toast('✅ Frigo enregistré');
+}
+document.getElementById('btn-del-frigo').addEventListener('click',async()=>{if(!activeF)return;const f=frigosData[activeF];if(!confirm(`Supprimer "${f.name}" ?`))return;await sb.from('cave_cells').delete().eq('frigo_id',activeF);await sb.from('frigos').delete().eq('id',activeF);delete frigosData[activeF];activeF=null;const rem=Object.keys(frigosData);if(rem.length)setFrigo(rem[0]);else showFrigoEmpty();updateStockStats();});
+
+/* Fiches */
+async function loadFiches(){const {data}=await sb.from('lot_fiches').select('*').order('created_at');fichesData=data||[];renderFiches();}
+function renderFiches(){
+  const c=document.getElementById('fiches-list');
+  if(!fichesData.length){c.innerHTML='<div style="color:var(--muted);font-size:.8rem;font-style:italic;text-align:center;padding:1rem">Aucune fiche — créez-en une ci-dessus.</div>';return;}
+  c.innerHTML=fichesData.map(f=>`
+    <div class="fiche-card" onclick="onFicheClick('${f.id}')" onmouseover="this.style.borderColor='${f.color}'" onmouseout="this.style.borderColor='var(--border)'">
+      <div class="fiche-top-bar" style="background:${f.color}"></div>
+      <div style="margin-top:.25rem;display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;">
+        <div style="flex:1;min-width:0;">
+          <div class="fiche-variety">${f.variety}</div>
+          <div class="fiche-lot">${f.lot||'Sans n° de lot'}</div>
+          <div class="fiche-date">${f.date?new Date(f.date).toLocaleDateString('fr-FR'):'–'}</div>
+        </div>
+        <div><div class="fiche-palox">${f.palox}</div><div class="fiche-plbl">palox/case</div></div>
+      </div>
+      <button onclick="event.stopPropagation();openFicheModal('${f.id}')" style="position:absolute;bottom:.4rem;right:.4rem;background:none;border:none;cursor:pointer;color:var(--muted);font-size:.7rem;padding:.15rem .35rem;border-radius:4px;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background='none'">✏️</button>
+    </div>`).join('');
+}
+function onFicheClick(id){
+  const fiche=fichesData.find(f=>f.id===id);if(!fiche)return;
+  if(!insCell){toast('🎯 Cliquez d\'abord sur une case dans le frigo');return;}
+  insFiche=fiche;insPalox=fiche.palox;
+  const fid=insCell.split('_')[0],sid=insCell.replace(fid+'_','');
+  const ex=frigosData[fid]?.cells[insCell];
+  document.getElementById('ins-modal-title').textContent=`Insérer dans la case ${sid}`;
+  document.getElementById('ip-bar').style.background=fiche.color;document.getElementById('ins-prev').style.borderColor=fiche.color;
+  document.getElementById('ip-var').textContent=fiche.variety;document.getElementById('ip-lot').textContent=fiche.lot||'Sans n° de lot';
+  document.getElementById('ip-palox').textContent=insPalox;document.getElementById('ins-palox-val').textContent=insPalox;
+  document.getElementById('ins-warn').style.display=ex?'block':'none';
+  openModal('ins-modal');
+}
+function adjPalox(d){insPalox=Math.max(1,Math.min(99,insPalox+d));document.getElementById('ins-palox-val').textContent=insPalox;document.getElementById('ip-palox').textContent=insPalox;}
+async function confirmInsert(){
+  if(!insCell||!insFiche)return;
+  const btn=document.getElementById('ins-confirm-btn');btn.textContent='…';btn.disabled=true;
+  const fid=insCell.split('_')[0],info={variety:insFiche.variety,lot:insFiche.lot,palox:insPalox,color:insFiche.color,date:insFiche.date};
+  const {error}=await sb.from('cave_cells').upsert({cell_id:insCell,frigo_id:fid,...info,updated_at:new Date().toISOString()},{onConflict:'cell_id'});
+  if(error){alert('Erreur: '+error.message);btn.textContent='✓ Insérer';btn.disabled=false;return;}
+  frigosData[fid].cells[insCell]=info;
+  const el=document.querySelector(`[data-cell="${insCell}"]`);if(el)renderCellEl(el,info);
+  updateOcc(frigosData[fid]);updateStockStats();
+  btn.textContent='✓ Insérer';btn.disabled=false;closeModal('ins-modal');
+  highlightCell(insCell,false);insCell=null;insFiche=null;document.getElementById('ins-banner').classList.remove('on');
+  toast('✅ Lot inséré !');
+}
+async function promptClear(cid){
+  const fid=cid.split('_')[0],d=frigosData[fid]?.cells[cid];if(!d)return;
+  const sid=cid.replace(fid+'_','');if(!confirm(`Vider la case ${sid} (${d.variety}) ?`))return;
+  await sb.from('cave_cells').delete().eq('cell_id',cid);delete frigosData[fid].cells[cid];
+  const el=document.querySelector(`[data-cell="${cid}"]`);if(el)renderEmptyCellEl(el);
+  updateOcc(frigosData[fid]);updateStockStats();
+}
+function openFicheModal(id){
+  editFicheId=id;const f=id?fichesData.find(x=>x.id===id):null;
+  document.getElementById('fiche-modal-title').textContent=f?'Modifier la fiche':'Nouvelle fiche lot';
+  document.getElementById('fiche-var').value=f?.variety||'';document.getElementById('fiche-lot').value=f?.lot||'';
+  document.getElementById('fiche-palox').value=f?.palox||1;document.getElementById('fiche-date').value=f?.date||new Date().toISOString().split('T')[0];
+  fichColor=f?.color||PALETTE[Math.floor(Math.random()*PALETTE.length)];
+  document.getElementById('fiche-palette').innerHTML=PALETTE.map(c=>`<div class="palette-sw${c===fichColor?' sel':''}" style="background:${c}" data-c="${c}" onclick="selFicheColor('${c}')"></div>`).join('');
+  document.getElementById('fiche-del-btn').style.display=f?'block':'none';
+  document.getElementById('fiche-save-btn').textContent=f?'Enregistrer':'Créer la fiche';
+  updateFichePreview();openModal('fiche-modal');setTimeout(()=>document.getElementById('fiche-var').focus(),100);
+}
+function selFicheColor(c){fichColor=c;document.querySelectorAll('#fiche-palette .palette-sw').forEach(s=>s.classList.toggle('sel',s.dataset.c===c));updateFichePreview();}
+function updateFichePreview(){
+  const v=document.getElementById('fiche-var').value||'Variété',l=document.getElementById('fiche-lot').value||'N° lot',p=document.getElementById('fiche-palox').value||'1',d=document.getElementById('fiche-date').value;
+  document.getElementById('fp-var').textContent=v;document.getElementById('fp-lot').textContent=l;document.getElementById('fp-palox').textContent=p;
+  document.getElementById('fp-date').textContent=d?new Date(d).toLocaleDateString('fr-FR'):'–';
+  document.getElementById('fp-bar').style.background=fichColor;document.getElementById('fiche-prev').style.borderColor=fichColor;
+}
+async function saveFiche(){
+  const variety=document.getElementById('fiche-var').value.trim(),lot=document.getElementById('fiche-lot').value.trim(),palox=+document.getElementById('fiche-palox').value||1,date=document.getElementById('fiche-date').value;
+  if(!variety){alert('Saisissez la variété.');return;}
+  const btn=document.getElementById('fiche-save-btn');btn.textContent='…';btn.disabled=true;
+  const payload={variety,lot,palox,color:fichColor,date};
+  if(editFicheId){const {error}=await sb.from('lot_fiches').update(payload).eq('id',editFicheId);if(error){alert(error.message);btn.textContent='Enregistrer';btn.disabled=false;return;}const i=fichesData.findIndex(f=>f.id===editFicheId);if(i>=0)fichesData[i]={...fichesData[i],...payload};}
+  else{const {data,error}=await sb.from('lot_fiches').insert(payload).select().single();if(error){alert(error.message);btn.textContent='Créer la fiche';btn.disabled=false;return;}fichesData.push(data);}
+  renderFiches();btn.textContent=editFicheId?'Enregistrer':'Créer la fiche';btn.disabled=false;closeModal('fiche-modal');toast(editFicheId?'✅ Fiche modifiée':'✅ Fiche créée !');
+}
+async function deleteFiche(){if(!editFicheId)return;const f=fichesData.find(x=>x.id===editFicheId);if(!confirm(`Supprimer la fiche "${f?.variety}" ?`))return;await sb.from('lot_fiches').delete().eq('id',editFicheId);fichesData=fichesData.filter(x=>x.id!==editFicheId);renderFiches();closeModal('fiche-modal');}
+
+/* ══════════════════ BASE DE DONNÉES ══════════════════ */
+document.querySelectorAll('.db-tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.db-tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.db-panel').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');document.getElementById('panel-'+t.dataset.tab).classList.add('active');
+}));
+
+/* CLIENTS */
+let clientsData=[],editClientId=null;
+async function loadClients(){const {data}=await sb.from('db_clients').select('*').order('nom');clientsData=data||[];renderClients(clientsData);document.getElementById('kpi-clients').textContent=clientsData.length;}
+function renderClients(data){
+  const tb=document.getElementById('clients-tbody');
+  if(!data.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;">Aucun client</td></tr>';return;}
+  tb.innerHTML=data.map(c=>`<tr><td><strong>${c.nom}</strong>${c.email?`<br><span style="font-size:.73rem;color:var(--muted)">${c.email}</span>`:''}</td><td>${c.adresse||'–'}</td><td>${c.code_postal||'–'}</td><td>${c.ville||'–'}</td><td>${c.pays||'–'}</td><td><button class="btn" onclick="openClientModal('${c.id}')">✏️</button></td></tr>`).join('');
+}
+function filterClients(q){renderClients(q?clientsData.filter(c=>`${c.nom} ${c.ville} ${c.email}`.toLowerCase().includes(q.toLowerCase())):clientsData);}
+function openClientModal(id){
+  editClientId=id;const c=id?clientsData.find(x=>x.id===id):null;
+  document.getElementById('client-modal-title').textContent=c?`Modifier — ${c.nom}`:'Nouveau client';
+  document.getElementById('cl-nom').value=c?.nom||'';document.getElementById('cl-adr').value=c?.adresse||'';
+  document.getElementById('cl-cp').value=c?.code_postal||'';document.getElementById('cl-ville').value=c?.ville||'';
+  document.getElementById('cl-pays').value=c?.pays||'France';document.getElementById('cl-tel').value=c?.telephone||'';
+  document.getElementById('cl-email').value=c?.email||'';
+  document.getElementById('cl-del-btn').style.display=c?'block':'none';
+  document.getElementById('cl-save-btn').textContent=c?'Enregistrer':'Ajouter';
+  openModal('client-modal');setTimeout(()=>document.getElementById('cl-nom').focus(),100);
+}
+async function saveClient(){
+  const nom=document.getElementById('cl-nom').value.trim();if(!nom){alert('Saisissez un nom.');return;}
+  const payload={nom,adresse:document.getElementById('cl-adr').value.trim(),code_postal:document.getElementById('cl-cp').value.trim(),ville:document.getElementById('cl-ville').value.trim(),pays:document.getElementById('cl-pays').value.trim()||'France',telephone:document.getElementById('cl-tel').value.trim(),email:document.getElementById('cl-email').value.trim()};
+  const btn=document.getElementById('cl-save-btn');btn.textContent='…';btn.disabled=true;
+  if(editClientId){await sb.from('db_clients').update(payload).eq('id',editClientId);}else{await sb.from('db_clients').insert(payload);}
+  await loadClients();btn.textContent=editClientId?'Enregistrer':'Ajouter';btn.disabled=false;closeModal('client-modal');toast('✅ Client enregistré');
+}
+async function deleteClient(){if(!editClientId)return;if(!confirm('Supprimer ce client ?'))return;await sb.from('db_clients').delete().eq('id',editClientId);await loadClients();closeModal('client-modal');}
+
+/* STOCKS/LOTS */
+let lotsData=[],editLotId=null;
+async function loadLots(){const {data}=await sb.from('db_lots').select('*').order('variete');lotsData=data||[];renderLots(lotsData);}
+function renderLots(data){
+  const tb=document.getElementById('stocks-tbody');
+  if(!data.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem;">Aucune variété enregistrée</td></tr>';return;}
+  tb.innerHTML=data.map(l=>`<tr><td><strong>${l.variete}</strong></td><td>${l.lot||'–'}</td><td>${l.type_chargement||'–'}</td><td>${l.type_palette||'–'}</td><td><button class="btn" onclick="openLotModal('${l.id}')">✏️</button></td></tr>`).join('');
+}
+function filterStocks(q){renderLots(q?lotsData.filter(l=>`${l.variete} ${l.lot}`.toLowerCase().includes(q.toLowerCase())):lotsData);}
+function openLotModal(id){
+  editLotId=id;const l=id?lotsData.find(x=>x.id===id):null;
+  document.getElementById('lot-modal-title').textContent=l?'Modifier le lot':'Nouveau lot / variété';
+  document.getElementById('lt-var').value=l?.variete||'';document.getElementById('lt-lot').value=l?.lot||'';
+  document.getElementById('lt-date').value=l?.date_recolte||'';document.getElementById('lt-charg').value=l?.type_chargement||'';
+  document.getElementById('lt-palette').value=l?.type_palette||'';document.getElementById('lt-qte').value=l?.quantite||'';
+  document.getElementById('lt-obs').value=l?.observations||'';
+  document.getElementById('lt-del-btn').style.display=l?'block':'none';
+  document.getElementById('lt-save-btn').textContent=l?'Enregistrer':'Ajouter';
+  openModal('lot-modal');setTimeout(()=>document.getElementById('lt-var').focus(),100);
+}
+async function saveLot(){
+  const variete=document.getElementById('lt-var').value.trim();if(!variete){alert('Saisissez la variété.');return;}
+  const payload={variete,lot:document.getElementById('lt-lot').value.trim(),date_recolte:document.getElementById('lt-date').value||null,type_chargement:document.getElementById('lt-charg').value,type_palette:document.getElementById('lt-palette').value,quantite:document.getElementById('lt-qte').value,observations:document.getElementById('lt-obs').value.trim()};
+  const btn=document.getElementById('lt-save-btn');btn.textContent='…';btn.disabled=true;
+  if(editLotId){await sb.from('db_lots').update(payload).eq('id',editLotId);}else{await sb.from('db_lots').insert(payload);}
+  await loadLots();btn.textContent=editLotId?'Enregistrer':'Ajouter';btn.disabled=false;closeModal('lot-modal');toast('✅ Lot enregistré');
+}
+async function deleteLot(){if(!editLotId)return;if(!confirm('Supprimer ce lot ?'))return;await sb.from('db_lots').delete().eq('id',editLotId);await loadLots();closeModal('lot-modal');}
+
+/* INTRANTS */
+let intrantsData=[],editIntrantId=null,activeIntrantCat='all';
+async function loadIntrants(){const {data}=await sb.from('db_intrants').select('*').order('nom');intrantsData=data||[];renderIntrants();}
+function renderIntrants(){
+  const filtered=activeIntrantCat==='all'?intrantsData:intrantsData.filter(i=>i.categorie===activeIntrantCat);
+  const tb=document.getElementById('intrants-tbody');
+  if(!filtered.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;">Aucun intrant</td></tr>';return;}
+  tb.innerHTML=filtered.map(i=>`<tr><td><strong>${i.nom}</strong></td><td><span class="badge g">${i.categorie||'–'}</span></td><td>${i.espece||i.sous_categorie||'–'}</td><td>${i.fournisseur||'–'}</td><td>${i.stock??'–'} ${i.unite||''}</td><td><button class="btn" onclick="openIntrantModal('${i.id}')">✏️</button></td></tr>`).join('');
+}
+function filterIntrants(cat,btn){
+  activeIntrantCat=cat;document.querySelectorAll('[data-cat]').forEach(b=>b.classList.remove('active-cat','green'));
+  if(btn){btn.classList.add('active-cat');if(cat!=='all')btn.style.cssText='background:var(--g-mid);color:white;border-color:var(--g-mid);';}
+  renderIntrants();
+}
+function openIntrantModal(id){
+  editIntrantId=id;const i=id?intrantsData.find(x=>x.id===id):null;
+  document.getElementById('intrant-modal-title').textContent=i?'Modifier l\'intrant':'Nouvel intrant';
+  document.getElementById('in-nom').value=i?.nom||'';document.getElementById('in-cat').value=i?.categorie||'';
+  document.getElementById('in-scat').value=i?.sous_categorie||'';document.getElementById('in-esp').value=i?.espece||'';
+  document.getElementById('in-four').value=i?.fournisseur||'';document.getElementById('in-lot').value=i?.lot||'';
+  document.getElementById('in-comp').value=i?.composition||'';document.getElementById('in-stock').value=i?.stock||'';
+  document.getElementById('in-unit').value=i?.unite||'kg';
+  document.getElementById('in-del-btn').style.display=i?'block':'none';
+  document.getElementById('in-save-btn').textContent=i?'Enregistrer':'Ajouter';
+  openModal('intrant-modal');setTimeout(()=>document.getElementById('in-nom').focus(),100);
+}
+async function saveIntrant(){
+  const nom=document.getElementById('in-nom').value.trim();if(!nom){alert('Saisissez un nom.');return;}
+  const payload={nom,categorie:document.getElementById('in-cat').value,sous_categorie:document.getElementById('in-scat').value.trim(),espece:document.getElementById('in-esp').value.trim(),fournisseur:document.getElementById('in-four').value.trim(),lot:document.getElementById('in-lot').value.trim(),composition:document.getElementById('in-comp').value.trim(),stock:+document.getElementById('in-stock').value||0,unite:document.getElementById('in-unit').value};
+  const btn=document.getElementById('in-save-btn');btn.textContent='…';btn.disabled=true;
+  if(editIntrantId){await sb.from('db_intrants').update(payload).eq('id',editIntrantId);}else{await sb.from('db_intrants').insert(payload);}
+  await loadIntrants();btn.textContent=editIntrantId?'Enregistrer':'Ajouter';btn.disabled=false;closeModal('intrant-modal');toast('✅ Intrant enregistré');
+}
+async function deleteIntrant(){if(!editIntrantId)return;if(!confirm('Supprimer cet intrant ?'))return;await sb.from('db_intrants').delete().eq('id',editIntrantId);await loadIntrants();closeModal('intrant-modal');}
+
+/* PHYTO */
+let phytoData=[],editPhytoId=null;
+async function loadPhyto(){const {data}=await sb.from('db_phyto').select('*').order('nom');phytoData=data||[];renderPhyto(phytoData);}
+function renderPhyto(data){
+  const tb=document.getElementById('phyto-tbody');
+  if(!data.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:2rem;">Aucun produit enregistré</td></tr>';return;}
+  tb.innerHTML=data.map(p=>`<tr><td><strong>${p.nom}</strong></td><td>${p.num_amm||'–'}</td><td>${p.substance_active||'–'}</td><td>${p.usage_cible||p.usage||'–'}</td><td>${p.dar??'–'}</td><td><span class="badge ${p.source==='EPHY'?'b':'g'}">${p.source||'Manuel'}</span></td><td><button class="btn" onclick="openPhytoModal('${p.id}')">✏️</button></td></tr>`).join('');
+}
+async function searchPhyto(q){
+  const list=document.getElementById('ephy-results');
+  if(q.length<3){list.style.display='none';return;}
+  // Recherche dans les données locales d'abord
+  const local=phytoData.filter(p=>p.nom.toLowerCase().includes(q.toLowerCase()));
+  // Simuler EPHY (API publique EPHY via INRAE)
+  try{
+    const r=await fetch(`https://ephy.anses.fr/api/v1/produit/?nom_commercial=${encodeURIComponent(q)}&format=json&limit=8`);
+    if(r.ok){
+      const d=await r.json();
+      const results=(d.results||[]).map(p=>({nom:p.nom_commercial,amm:p.numero_amm,sub:p.substances_actives?.map(s=>s.nom).join(', ')||'',usage:p.domaines_utilisation?.join(', ')||'',dar:p.dai||'',source:'EPHY'}));
+      list.innerHTML=results.map(p=>`<div class="autocomplete-item" onclick="addEphyProduct(${JSON.stringify(p).replace(/"/g,'&quot;')})"><strong>${p.nom}</strong><br><span style="font-size:.72rem;color:var(--muted)">AMM: ${p.amm||'–'} | ${p.sub||'–'}</span></div>`).join('');
+      list.style.display=results.length?'block':'none';return;
+    }
+  }catch(e){}
+  // Fallback: montrer résultats locaux
+  list.innerHTML=local.slice(0,5).map(p=>`<div class="autocomplete-item" onclick="openPhytoModal('${p.id}')"><strong>${p.nom}</strong><br><span style="font-size:.72rem;color:var(--muted)">AMM: ${p.num_amm||'–'}</span></div>`).join('');
+  list.style.display=local.length?'block':'none';
+}
+async function addEphyProduct(p){
+  document.getElementById('ephy-results').style.display='none';document.getElementById('search-phyto').value='';
+  const {error}=await sb.from('db_phyto').insert({nom:p.nom,num_amm:p.amm,substance_active:p.sub,usage:p.usage,dar:p.dar?+p.dar:null,source:'EPHY'});
+  if(error){alert('Erreur: '+error.message);return;}
+  await loadPhyto();toast('✅ Produit EPHY ajouté !');
+}
+document.addEventListener('click',e=>{if(!e.target.closest('#search-phyto')&&!e.target.closest('#ephy-results'))document.getElementById('ephy-results').style.display='none';});
+function openPhytoModal(id){
+  editPhytoId=id;const p=id?phytoData.find(x=>x.id===id):null;
+  document.getElementById('phyto-modal-title').textContent=p?'Modifier le produit':'Produit phytosanitaire';
+  document.getElementById('ph-nom').value=p?.nom||'';document.getElementById('ph-amm').value=p?.num_amm||'';
+  document.getElementById('ph-dar').value=p?.dar||'';document.getElementById('ph-sub').value=p?.substance_active||'';
+  document.getElementById('ph-usage').value=p?.usage||p?.usage_cible||'';document.getElementById('ph-dose').value=p?.dose||'';
+  document.getElementById('ph-cond').value=p?.conditionnement||'';
+  document.getElementById('ph-del-btn').style.display=p?'block':'none';
+  document.getElementById('ph-save-btn').textContent=p?'Enregistrer':'Ajouter';
+  openModal('phyto-modal');setTimeout(()=>document.getElementById('ph-nom').focus(),100);
+}
+async function savePhyto(){
+  const nom=document.getElementById('ph-nom').value.trim();if(!nom){alert('Saisissez un nom.');return;}
+  const payload={nom,num_amm:document.getElementById('ph-amm').value.trim(),dar:+document.getElementById('ph-dar').value||null,substance_active:document.getElementById('ph-sub').value.trim(),usage:document.getElementById('ph-usage').value.trim(),dose:document.getElementById('ph-dose').value.trim(),conditionnement:document.getElementById('ph-cond').value.trim(),source:'Manuel'};
+  const btn=document.getElementById('ph-save-btn');btn.textContent='…';btn.disabled=true;
+  if(editPhytoId){await sb.from('db_phyto').update(payload).eq('id',editPhytoId);}else{await sb.from('db_phyto').insert(payload);}
+  await loadPhyto();btn.textContent=editPhytoId?'Enregistrer':'Ajouter';btn.disabled=false;closeModal('phyto-modal');toast('✅ Produit enregistré');
+}
+async function deletePhyto(){if(!editPhytoId)return;if(!confirm('Supprimer ce produit ?'))return;await sb.from('db_phyto').delete().eq('id',editPhytoId);await loadPhyto();closeModal('phyto-modal');}
+
+/* ══════════════════ PLANNING ══════════════════ */
+let planDate=new Date(),rdvData=[],editRdvId=null,editRdvSlot=null;
+const HOURS=Array.from({length:24},(_,i)=>i); // 0h à 23h
+
+async function loadRdv(date){
+  const ds=date.toISOString().split('T')[0];
+  const {data}=await sb.from('planning_rdv').select('*').eq('date',ds).order('time_slot');
+  rdvData=data||[];
+}
+
+function renderPlanning(){
+  const grid=document.getElementById('plan-grid');
+  const ds=planDate.toISOString().split('T')[0];
+  const opts={weekday:'long',day:'numeric',month:'long',year:'numeric'};
+  document.getElementById('plan-date-lbl').textContent=planDate.toLocaleDateString('fr-FR',opts).replace(/^\w/,c=>c.toUpperCase());
+  grid.innerHTML='';
+  HOURS.forEach(h=>{
+    const slot=`${String(h).padStart(2,'0')}:00`;
+    const rdvs=rdvData.filter(r=>r.time_slot===slot);
+    // Heure label
+    const hlbl=document.createElement('div');hlbl.className='plan-hour';hlbl.textContent=slot;grid.appendChild(hlbl);
+    // Slot
+    const sDiv=document.createElement('div');sDiv.className='plan-slot'+(rdvs.length?' has-rdv':'');
+    if(rdvs.length){
+      rdvs.forEach(rdv=>{
+        const card=document.createElement('div');
+        card.className='rdv-card'+(rdv.a_confirmer?' a-confirmer':'');
+        const badges=[];
+        if(rdv.lave)badges.push('<span class="badge g">Lavé ✓</span>');
+        if(rdv.a_confirmer)badges.push('<span class="badge a">À confirmer</span>');
+        if(rdv.nb_camions>1)badges.push(`<span class="badge b">${rdv.nb_camions} camions</span>`);
+        card.innerHTML=`
+          <div class="rdv-client">${rdv.client_nom||'Client inconnu'}</div>
+          <div class="rdv-detail">${[rdv.variete,rdv.type_chargement,rdv.quantite].filter(Boolean).join(' · ')}</div>
+          ${badges.length?`<div class="rdv-badges">${badges.join('')}</div>`:''}
+          ${rdv.observation?`<div style="font-size:.72rem;color:var(--muted);margin-top:.25rem;font-style:italic">${rdv.observation}</div>`:''}
+          <button class="rdv-del" onclick="event.stopPropagation();deleteRdvById('${rdv.id}')" title="Supprimer">✕</button>`;
+        card.onclick=()=>openRdvModal(slot,rdv);
+        sDiv.appendChild(card);
+      });
+      // Ajouter un second RDV sur ce créneau
+      const addBtn=document.createElement('button');addBtn.className='plan-add-btn';addBtn.style.marginTop='.4rem';addBtn.style.height='32px';addBtn.innerHTML='+ Ajouter un RDV sur ce créneau';addBtn.onclick=()=>openRdvModal(slot,null);
+      sDiv.appendChild(addBtn);
+    } else {
+      const addBtn=document.createElement('button');addBtn.className='plan-add-btn';addBtn.innerHTML='<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Ajouter un RDV';
+      addBtn.onclick=()=>openRdvModal(slot,null);sDiv.appendChild(addBtn);
+    }
+    grid.appendChild(sDiv);
+  });
+  // Update dashboard
+  updateDashboard();
+}
+
+async function goDay(delta){planDate=new Date(planDate.getTime()+delta*86400000);await loadRdv(planDate);renderPlanning();}
+document.getElementById('plan-prev').addEventListener('click',()=>goDay(-1));
+document.getElementById('plan-next').addEventListener('click',()=>goDay(1));
+document.getElementById('plan-today').addEventListener('click',async()=>{planDate=new Date();await loadRdv(planDate);renderPlanning();});
+
+function openRdvModal(slot,rdv){
+  editRdvId=rdv?.id||null;editRdvSlot=slot;
+  const dOpts={weekday:'long',day:'numeric',month:'long'};
+  document.getElementById('rdv-modal-title').textContent=rdv?'Modifier le RDV':'Nouveau rendez-vous';
+  document.getElementById('rdv-slot-lbl').textContent=`${planDate.toLocaleDateString('fr-FR',dOpts)} à ${slot}`;
+  document.getElementById('rdv-client-search').value=rdv?.client_nom||'';
+  document.getElementById('rdv-client-id').value=rdv?.client_id||'';
+  document.getElementById('rdv-client-info').style.display=rdv?.client_nom?'block':'none';
+  if(rdv?.client_nom)document.getElementById('rdv-client-info').textContent=rdv.client_nom;
+  // Remplir varietes depuis lotsData
+  const varSel=document.getElementById('rdv-variete');
+  const vars=[...new Set(lotsData.map(l=>l.variete).filter(Boolean))];
+  varSel.innerHTML='<option value="">– Sélectionner –</option>'+vars.map(v=>`<option${rdv?.variete===v?' selected':''}>${v}</option>`).join('');
+  document.getElementById('rdv-charg').value=rdv?.type_chargement||'';
+  document.getElementById('rdv-palette').value=rdv?.type_palette||'';
+  document.getElementById('rdv-qte').value=rdv?.quantite||'';
+  document.getElementById('rdv-nb-camions').value=rdv?.nb_camions||1;
+  document.getElementById('rdv-lave').checked=rdv?.lave||false;
+  document.getElementById('rdv-confirmer').checked=rdv?.a_confirmer||false;
+  document.getElementById('rdv-obs').value=rdv?.observation||'';
+  document.getElementById('rdv-note-privee').value=(rdv?.user_id===currentUserId)?rdv?.note_privee||'':'';
+  document.getElementById('rdv-del-btn').style.display=rdv?'block':'none';
+  document.getElementById('rdv-client-results').style.display='none';
+  openModal('rdv-modal');setTimeout(()=>document.getElementById('rdv-client-search').focus(),100);
+}
+
+function searchRdvClient(q){
+  const list=document.getElementById('rdv-client-results');
+  if(!q.trim()){list.style.display='none';return;}
+  const matches=clientsData.filter(c=>c.nom.toLowerCase().includes(q.toLowerCase())).slice(0,8);
+  if(!matches.length){list.style.display='none';return;}
+  list.innerHTML=matches.map(c=>`<div class="autocomplete-item" onclick="selectRdvClient('${c.id}','${c.nom.replace(/'/g,"\\'")}','${c.ville||''}')"><strong>${c.nom}</strong>${c.ville?` <span style="color:var(--muted);font-size:.78rem">— ${c.ville}</span>`:''}</div>`).join('');
+  list.style.display='block';
+}
+function selectRdvClient(id,nom,ville){
+  document.getElementById('rdv-client-id').value=id;
+  document.getElementById('rdv-client-search').value=nom;
+  document.getElementById('rdv-client-results').style.display='none';
+  const info=document.getElementById('rdv-client-info');
+  info.textContent=nom+(ville?` — ${ville}`:'');info.style.display='block';
+}
+document.addEventListener('click',e=>{if(!e.target.closest('#rdv-client-search')&&!e.target.closest('#rdv-client-results'))document.getElementById('rdv-client-results').style.display='none';});
+
+async function saveRdv(){
+  const clientId=document.getElementById('rdv-client-id').value,clientNom=document.getElementById('rdv-client-search').value.trim();
+  if(!clientNom){alert('Sélectionnez un client.');return;}
+  const payload={date:planDate.toISOString().split('T')[0],time_slot:editRdvSlot,client_id:clientId||null,client_nom:clientNom,variete:document.getElementById('rdv-variete').value,type_chargement:document.getElementById('rdv-charg').value,type_palette:document.getElementById('rdv-palette').value,quantite:document.getElementById('rdv-qte').value,nb_camions:+document.getElementById('rdv-nb-camions').value||1,lave:document.getElementById('rdv-lave').checked,a_confirmer:document.getElementById('rdv-confirmer').checked,observation:document.getElementById('rdv-obs').value.trim(),note_privee:document.getElementById('rdv-note-privee').value.trim(),user_id:currentUserId};
+  const btn=document.getElementById('rdv-save-btn');btn.textContent='…';btn.disabled=true;
+  if(editRdvId){await sb.from('planning_rdv').update(payload).eq('id',editRdvId);}else{await sb.from('planning_rdv').insert(payload);}
+  await loadRdv(planDate);renderPlanning();btn.textContent='Enregistrer';btn.disabled=false;closeModal('rdv-modal');toast('✅ RDV enregistré');
+}
+async function deleteRdv(){if(!editRdvId)return;if(!confirm('Supprimer ce RDV ?'))return;await sb.from('planning_rdv').delete().eq('id',editRdvId);await loadRdv(planDate);renderPlanning();closeModal('rdv-modal');}
+async function deleteRdvById(id){if(!confirm('Supprimer ce RDV ?'))return;await sb.from('planning_rdv').delete().eq('id',id);await loadRdv(planDate);renderPlanning();}
+
+/* ══════════════════ DASHBOARD ══════════════════ */
+function updateDashboard(){
+  document.getElementById('kpi-clients').textContent=clientsData.length;
+  const today=new Date().toISOString().split('T')[0];
+  const todayRdvs=rdvData.filter(r=>r.date===today||planDate.toISOString().split('T')[0]===today?rdvData:rdvData);
+  document.getElementById('kpi-rdv').textContent=rdvData.length;
+  if(rdvData.length){
+    document.getElementById('dash-rdv-list').innerHTML=rdvData.slice(0,4).map(r=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid var(--border);font-size:.82rem;"><span><strong>${r.time_slot}</strong> — ${r.client_nom||'–'}</span><span class="badge ${r.a_confirmer?'a':'g'}">${r.a_confirmer?'À confirmer':'Confirmé'}</span></div>`).join('');
+  }else{document.getElementById('dash-rdv-list').innerHTML='<div style="color:var(--muted);font-size:.82rem;">Aucun RDV aujourd\'hui</div>';}
+}
+
+/* ══════════════════ INIT PLANNING ══════════════════ */
+(async()=>{await loadRdv(planDate);})();
+
+
+/* ══════════════════════════════════════
+   BASE DE DONNÉES
+══════════════════════════════════════ */
+let dbData = { clients:[], lots:[], intrants:[], phyto:[] };
+let editingRecord = { type:null, id:null };
+let currentIntrantFilter = 'all';
+
+async function loadAllDbData() {
+  const [c,l,i,p] = await Promise.all([
+    sb.from('db_clients').select('*').order('nom'),
+    sb.from('db_lots').select('*').order('variete'),
+    sb.from('db_intrants').select('*').order('nom'),
+    sb.from('db_phyto').select('*').order('nom')
+  ]);
+  dbData.clients  = c.data||[];
+  dbData.lots     = l.data||[];
+  dbData.intrants = i.data||[];
+  dbData.phyto    = p.data||[];
+  renderClients(); renderLots(); renderIntrants(); renderPhyto();
+}
+
+/* BDD Tab switching */
+function switchBddTab(tab) {
+  document.querySelectorAll('.bdd-tab').forEach(b => b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('.bdd-panel').forEach(p => p.classList.toggle('active', p.id===`bdd-${tab}`));
+}
+
+function filterTable(type) {
+  const q = document.getElementById(`search-${type}`).value.toLowerCase();
+  const rows = document.querySelectorAll(`#tbody-${type} tr`);
+  rows.forEach(r => r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none');
+}
+
+function filterIntrants(sub) {
+  currentIntrantFilter = sub;
+  document.querySelectorAll('.sub-tab').forEach(b => b.classList.toggle('active', b.dataset.sub===sub));
+  renderIntrants();
+}
+
+/* ── CLIENTS ── */
+function renderClients() {
+  const tbody = document.getElementById('tbody-clients');
+  if (!dbData.clients.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem;">Aucun client enregistré</td></tr>'; return; }
+  tbody.innerHTML = dbData.clients.map(c => `
+    <tr>
+      <td><strong>${c.nom}</strong></td>
+      <td>${c.adresse||'–'}</td>
+      <td>${c.code_postal||'–'}</td>
+      <td>${c.ville||'–'}</td>
+      <td>${c.pays||'France'}</td>
+      <td><button class="btn-sm" onclick="openClientModal('${c.id}')">✏️ Modifier</button></td>
+    </tr>`).join('');
+}
+
+function openClientModal(id) {
+  editingRecord = { type:'clients', id: id||null };
+  const c = id ? dbData.clients.find(x=>x.id===id) : null;
+  document.getElementById('client-modal-title').textContent = c ? 'Modifier le client' : 'Nouveau client';
+  document.getElementById('c-nom').value     = c?.nom||'';
+  document.getElementById('c-adresse').value = c?.adresse||'';
+  document.getElementById('c-cp').value      = c?.code_postal||'';
+  document.getElementById('c-ville').value   = c?.ville||'';
+  document.getElementById('c-pays').value    = c?.pays||'France';
+  document.getElementById('c-tel').value     = c?.telephone||'';
+  document.getElementById('c-email').value   = c?.email||'';
+  document.getElementById('c-delete-btn').style.display = c ? 'block' : 'none';
+  openModal('client-modal');
+}
+
+async function saveClient() {
+  const nom = document.getElementById('c-nom').value.trim();
+  if (!nom) { alert('Le nom est obligatoire.'); return; }
+  const payload = { nom, adresse:document.getElementById('c-adresse').value, code_postal:document.getElementById('c-cp').value, ville:document.getElementById('c-ville').value, pays:document.getElementById('c-pays').value, telephone:document.getElementById('c-tel').value, email:document.getElementById('c-email').value };
+  if (editingRecord.id) {
+    const {error} = await sb.from('db_clients').update(payload).eq('id', editingRecord.id);
+    if (error) { alert(error.message); return; }
+    const idx = dbData.clients.findIndex(x=>x.id===editingRecord.id);
+    if (idx>=0) dbData.clients[idx] = {...dbData.clients[idx], ...payload};
+  } else {
+    const {data,error} = await sb.from('db_clients').insert(payload).select().single();
+    if (error) { alert(error.message); return; }
+    dbData.clients.push(data);
+  }
+  renderClients(); closeModal('client-modal'); showToast('✅ Client enregistré');
+}
+
+/* ── LOTS ── */
+function renderLots() {
+  const tbody = document.getElementById('tbody-lots');
+  if (!dbData.lots.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:2rem;">Aucun lot enregistré</td></tr>'; return; }
+  tbody.innerHTML = dbData.lots.map(l => `
+    <tr>
+      <td><strong>${l.variete}</strong></td>
+      <td>${l.lot||'–'}</td>
+      <td>${l.type_chargement||'–'}</td>
+      <td>${l.type_palette||'–'}</td>
+      <td><button class="btn-sm" onclick="openLotModal('${l.id}')">✏️ Modifier</button></td>
+    </tr>`).join('');
+}
+
+function openLotModal(id) {
+  editingRecord = { type:'lots', id: id||null };
+  const l = id ? dbData.lots.find(x=>x.id===id) : null;
+  document.getElementById('lot-modal-title').textContent = l ? 'Modifier le lot' : 'Nouveau lot';
+  document.getElementById('l-variete').value    = l?.variete||'';
+  document.getElementById('l-lot').value        = l?.lot||'';
+  document.getElementById('l-chargement').value = l?.type_chargement||'';
+  document.getElementById('l-palette').value    = l?.type_palette||'';
+  document.getElementById('l-delete-btn').style.display = l ? 'block' : 'none';
+  openModal('lot-modal');
+}
+
+async function saveLot() {
+  const variete = document.getElementById('l-variete').value.trim();
+  if (!variete) { alert('La variété est obligatoire.'); return; }
+  const payload = { variete, lot:document.getElementById('l-lot').value, type_chargement:document.getElementById('l-chargement').value, type_palette:document.getElementById('l-palette').value };
+  if (editingRecord.id) {
+    const {error} = await sb.from('db_lots').update(payload).eq('id', editingRecord.id);
+    if (error) { alert(error.message); return; }
+    const idx = dbData.lots.findIndex(x=>x.id===editingRecord.id);
+    if (idx>=0) dbData.lots[idx] = {...dbData.lots[idx], ...payload};
+  } else {
+    const {data,error} = await sb.from('db_lots').insert(payload).select().single();
+    if (error) { alert(error.message); return; }
+    dbData.lots.push(data);
+  }
+  renderLots(); closeModal('lot-modal'); showToast('✅ Lot enregistré');
+}
+
+/* ── INTRANTS ── */
+function renderIntrants() {
+  const tbody = document.getElementById('tbody-intrants');
+  let data = dbData.intrants;
+  if (currentIntrantFilter !== 'all') data = data.filter(x=>x.categorie===currentIntrantFilter);
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem;">Aucun intrant dans cette catégorie</td></tr>'; return; }
+  const catLabels = {semences:'🌾 Semences',plants:'🥔 Plants PDT',engrais:'🧪 Engrais',ferti:'💧 Fertilisation',autre:'Autre'};
+  tbody.innerHTML = data.map(i => `
+    <tr>
+      <td><strong>${i.nom}</strong></td>
+      <td>${catLabels[i.categorie]||i.categorie||'–'}</td>
+      <td>${i.fournisseur||'–'}</td>
+      <td>${i.stock!=null?i.stock:'–'}</td>
+      <td>${i.unite||'–'}</td>
+      <td><button class="btn-sm" onclick="openIntrantModal('${i.id}')">✏️ Modifier</button></td>
+    </tr>`).join('');
+}
+
+function openIntrantModal(id) {
+  editingRecord = { type:'intrants', id: id||null };
+  const i = id ? dbData.intrants.find(x=>x.id===id) : null;
+  document.getElementById('intrant-modal-title').textContent = i ? 'Modifier l\'intrant' : 'Nouvel intrant';
+  document.getElementById('i-nom').value        = i?.nom||'';
+  document.getElementById('i-cat').value        = i?.categorie||'semences';
+  document.getElementById('i-fournisseur').value= i?.fournisseur||'';
+  document.getElementById('i-lot').value        = i?.lot||'';
+  document.getElementById('i-stock').value      = i?.stock||'';
+  document.getElementById('i-unite').value      = i?.unite||'kg';
+  document.getElementById('i-compo').value      = i?.composition||'';
+  document.getElementById('i-delete-btn').style.display = i ? 'block' : 'none';
+  openModal('intrant-modal');
+}
+
+async function saveIntrant() {
+  const nom = document.getElementById('i-nom').value.trim();
+  if (!nom) { alert('Le nom est obligatoire.'); return; }
+  const payload = { nom, categorie:document.getElementById('i-cat').value, fournisseur:document.getElementById('i-fournisseur').value, lot:document.getElementById('i-lot').value, stock:parseFloat(document.getElementById('i-stock').value)||null, unite:document.getElementById('i-unite').value, composition:document.getElementById('i-compo').value };
+  if (editingRecord.id) {
+    const {error} = await sb.from('db_intrants').update(payload).eq('id', editingRecord.id);
+    if (error) { alert(error.message); return; }
+    const idx = dbData.intrants.findIndex(x=>x.id===editingRecord.id);
+    if (idx>=0) dbData.intrants[idx] = {...dbData.intrants[idx], ...payload};
+  } else {
+    const {data,error} = await sb.from('db_intrants').insert(payload).select().single();
+    if (error) { alert(error.message); return; }
+    dbData.intrants.push(data);
+  }
+  renderIntrants(); closeModal('intrant-modal'); showToast('✅ Intrant enregistré');
+}
+
+/* ── PHYTO ── */
+function renderPhyto() {
+  const tbody = document.getElementById('tbody-phyto');
+  if (!dbData.phyto.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem;">Aucun produit enregistré</td></tr>'; return; }
+  tbody.innerHTML = dbData.phyto.map(p => `
+    <tr>
+      <td><strong>${p.nom}</strong></td>
+      <td>${p.num_amm||'–'}</td>
+      <td>${p.substance_active||'–'}</td>
+      <td>${p.usage||'–'}</td>
+      <td>${p.dar!=null?p.dar+' j':'–'}</td>
+      <td><span class="status-badge ${p.source==='EPHY'?'ok':'warn'}">${p.source||'Manuel'}</span></td>
+      <td><button class="btn-sm" onclick="openPhytoModal('${p.id}')">✏️</button></td>
+    </tr>`).join('');
+}
+
+function openPhytoModal(id) {
+  editingRecord = { type:'phyto', id: id||null };
+  const p = id ? dbData.phyto.find(x=>x.id===id) : null;
+  document.getElementById('phyto-modal-title').textContent = p ? 'Modifier le produit' : 'Nouveau produit phyto';
+  document.getElementById('p-nom').value      = p?.nom||'';
+  document.getElementById('p-amm').value      = p?.num_amm||'';
+  document.getElementById('p-dar').value      = p?.dar||'';
+  document.getElementById('p-substance').value= p?.substance_active||'';
+  document.getElementById('p-usage').value    = p?.usage||'';
+  document.getElementById('p-delete-btn').style.display = p ? 'block' : 'none';
+  openModal('phyto-modal');
+}
+
+async function savePhyto() {
+  const nom = document.getElementById('p-nom').value.trim();
+  if (!nom) { alert('Le nom est obligatoire.'); return; }
+  const payload = { nom, num_amm:document.getElementById('p-amm').value, dar:parseInt(document.getElementById('p-dar').value)||null, substance_active:document.getElementById('p-substance').value, usage:document.getElementById('p-usage').value, source:'Manuel' };
+  if (editingRecord.id) {
+    const {error} = await sb.from('db_phyto').update(payload).eq('id', editingRecord.id);
+    if (error) { alert(error.message); return; }
+    const idx = dbData.phyto.findIndex(x=>x.id===editingRecord.id);
+    if (idx>=0) dbData.phyto[idx] = {...dbData.phyto[idx], ...payload};
+  } else {
+    const {data,error} = await sb.from('db_phyto').insert(payload).select().single();
+    if (error) { alert(error.message); return; }
+    dbData.phyto.push(data);
+  }
+  renderPhyto(); closeModal('phyto-modal'); showToast('✅ Produit enregistré');
+}
+
+/* Recherche EPHY (proxy via API publique) */
+let ephyTimer = null;
+function searchEphy(q) {
+  clearTimeout(ephyTimer);
+  const res = document.getElementById('ephy-results');
+  if (!q || q.length < 3) { res.style.display='none'; return; }
+  ephyTimer = setTimeout(async () => {
+    res.style.display='block';
+    res.innerHTML = '<div style="padding:.8rem;color:var(--text-muted);font-size:.82rem;">🔍 Recherche en cours…</div>';
+    try {
+      const r = await fetch(`https://api.gouv.fr/api/v1/ephy/produits?q=${encodeURIComponent(q)}&per_page=8`);
+      if (!r.ok) throw new Error();
+      const json = await r.json();
+      const items = json.results||json.data||[];
+      if (!items.length) { res.innerHTML = '<div style="padding:.8rem;color:var(--text-muted);font-size:.82rem;">Aucun résultat EPHY. Utilisez la saisie manuelle.</div>'; return; }
+      res.innerHTML = items.map(p => `
+        <div onclick="addPhytoFromEphy(${JSON.stringify(p).replace(/"/g,'&quot;')})" style="padding:.6rem 1rem;cursor:pointer;border-bottom:1px solid var(--border);font-size:.83rem;transition:background .1s;" onmouseover="this.style.background='var(--green-pale)'" onmouseout="this.style.background='white'">
+          <strong>${p.nom||p.name||p.libelle||'–'}</strong>
+          <span style="color:var(--text-muted);margin-left:.5rem;font-size:.75rem;">AMM: ${p.num_amm||p.amm||'–'}</span>
+        </div>`).join('');
+    } catch(e) {
+      res.innerHTML = '<div style="padding:.8rem;color:var(--text-muted);font-size:.82rem;">⚠️ Service EPHY indisponible. Utilisez la saisie manuelle.</div>';
+    }
+  }, 400);
+}
+
+async function addPhytoFromEphy(p) {
+  document.getElementById('ephy-results').style.display='none';
+  document.getElementById('search-phyto-ephy').value='';
+  const payload = { nom:p.nom||p.name||p.libelle, num_amm:p.num_amm||p.amm||'', substance_active:p.substance_active||p.matieres_actives||'', usage:p.usage||p.culture||'', dar:parseInt(p.dar)||null, source:'EPHY' };
+  const {data,error} = await sb.from('db_phyto').insert(payload).select().single();
+  if (error) { alert(error.message); return; }
+  dbData.phyto.push(data);
+  renderPhyto(); showToast('✅ Produit EPHY ajouté');
+}
+
+async function deleteRecord(type) {
+  if (!editingRecord.id) return;
+  const labels = {clients:'ce client',lots:'ce lot',intrants:'cet intrant',phyto:'ce produit'};
+  if (!confirm(`Supprimer ${labels[type]} ?`)) return;
+  const tables = {clients:'db_clients',lots:'db_lots',intrants:'db_intrants',phyto:'db_phyto'};
+  await sb.from(tables[type]).delete().eq('id', editingRecord.id);
+  dbData[type] = dbData[type].filter(x=>x.id!==editingRecord.id);
+  const renders = {clients:renderClients,lots:renderLots,intrants:renderIntrants,phyto:renderPhyto};
+  renders[type]();
+  const modals = {clients:'client-modal',lots:'lot-modal',intrants:'intrant-modal',phyto:'phyto-modal'};
+  closeModal(modals[type]);
+  showToast('🗑️ Supprimé');
+}
+
+/* ══════════════════════════════════════
+   PLANNING
+══════════════════════════════════════ */
+let planDate = new Date();
+let planRdvs = {};
+let editingRdvId = null;
+let currentUserId = null;
+
+function formatDateKey(d) {
+  return d.toISOString().split('T')[0];
+}
+
+function formatDateLabel(d) {
+  return d.toLocaleDateString('fr-FR', {weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+
+function changeDay(delta) {
+  planDate.setDate(planDate.getDate() + delta);
+  renderPlanning();
+  loadRdv(planDate);
+}
+
+function goToday() {
+  planDate = new Date();
+  renderPlanning();
+  loadRdv(planDate);
+}
+
+function renderPlanning() {
+  const label = document.getElementById('planning-date-label');
+  if (label) label.textContent = formatDateLabel(planDate);
+  const grid = document.getElementById('planning-grid');
+  if (!grid) return;
+
+  const dateKey = formatDateKey(planDate);
+  const dayRdvs = planRdvs[dateKey] || {};
+
+  let html = '<div style="background:white;border:1px solid var(--border);border-radius:12px;overflow:hidden;">';
+
+  for (let h = 0; h < 24; h++) {
+    const slot = `${String(h).padStart(2,'0')}:00`;
+    const rdv = dayRdvs[slot];
+    const timeLabel = slot;
+
+    html += `<div class="plan-row">
+      <div class="plan-time">${timeLabel}</div>
+      <div class="plan-slot ${rdv?'':'empty'}" onclick="openRdvModal('${slot}','${dateKey}')">`;
+
+    if (rdv) {
+      const pending = rdv.a_confirmer;
+      html += `<div class="rdv-card ${pending?'pending':''}">
+        <div class="rdv-card-left">
+          <div class="rdv-client">${rdv.client_nom||'Client inconnu'}</div>
+          <div class="rdv-detail">${[rdv.variete,rdv.type_chargement,rdv.quantite].filter(Boolean).join(' · ')}</div>
+          <div class="rdv-badges">
+            ${rdv.nb_camions>1?`<span class="rdv-badge camion">🚛 ${rdv.nb_camions} camions</span>`:''}
+            ${rdv.lave?'<span class="rdv-badge lave">💧 Lavé</span>':''}
+            ${rdv.a_confirmer?'<span class="rdv-badge pending">⏳ À confirmer</span>':''}
+          </div>
+          ${rdv.observation?`<div style="font-size:.72rem;color:var(--text-muted);margin-top:.2rem;font-style:italic;">${rdv.observation}</div>`:''}
+        </div>
+        <button onclick="event.stopPropagation();openRdvModal('${slot}','${dateKey}')" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:.8rem;padding:.3rem;">✏️</button>
+      </div>`;
+    } else {
+      html += `<span>+ Ajouter un RDV</span>`;
+    }
+
+    html += `</div></div>`;
+  }
+
+  html += '</div>';
+  grid.innerHTML = html;
+}
+
+async function loadRdv(d) {
+  const dateKey = formatDateKey(d);
+  const {data,error} = await sb.from('planning_rdv').select('*').eq('date', dateKey);
+  if (error) return;
+  planRdvs[dateKey] = {};
+  (data||[]).forEach(r => { planRdvs[dateKey][r.time_slot] = r; });
+  renderPlanning();
+}
+
+function openRdvModal(slot, dateKey) {
+  const rdv = planRdvs[dateKey]?.[slot];
+  editingRdvId = rdv?.id || null;
+
+  document.getElementById('rdv-modal-title').textContent = rdv ? 'Modifier le RDV' : `Nouveau RDV — ${slot}`;
+  document.getElementById('rdv-date').value    = dateKey;
+  document.getElementById('rdv-heure').value   = slot;
+  document.getElementById('rdv-variete').value = rdv?.variete||'';
+  document.getElementById('rdv-chargement').value = rdv?.type_chargement||'';
+  document.getElementById('rdv-palette').value = rdv?.type_palette||'';
+  document.getElementById('rdv-quantite').value= rdv?.quantite||'';
+  document.getElementById('rdv-camions').value = rdv?.nb_camions||1;
+  document.getElementById('rdv-obs').value     = rdv?.observation||'';
+  document.getElementById('rdv-note-privee').value = rdv?.note_privee||'';
+  document.getElementById('rdv-lave').checked  = rdv?.lave||false;
+  document.getElementById('rdv-confirmer').checked = rdv?.a_confirmer||false;
+
+  // Client
+  if (rdv?.client_nom) {
+    document.getElementById('rdv-client-search').value = rdv.client_nom;
+    document.getElementById('rdv-client-id').value = rdv.client_id||'';
+    document.getElementById('rdv-client-selected').textContent = rdv.client_nom;
+    document.getElementById('rdv-client-selected').style.display = 'block';
+  } else {
+    document.getElementById('rdv-client-search').value = '';
+    document.getElementById('rdv-client-id').value = '';
+    document.getElementById('rdv-client-selected').style.display = 'none';
+  }
+
+  // Populate heure select
+  const sel = document.getElementById('rdv-heure');
+  sel.innerHTML = '';
+  for (let h=0;h<24;h++) {
+    const v = `${String(h).padStart(2,'0')}:00`;
+    sel.innerHTML += `<option value="${v}" ${v===slot?'selected':''}>${v}</option>`;
+  }
+
+  document.getElementById('rdv-delete-btn').style.display = rdv ? 'block' : 'none';
+  openModal('rdv-modal');
+}
+
+function searchRdvClient(q) {
+  const dd = document.getElementById('rdv-client-dropdown');
+  if (!q || q.length < 1) { dd.style.display='none'; return; }
+  const matches = dbData.clients.filter(c => c.nom.toLowerCase().includes(q.toLowerCase())).slice(0,8);
+  if (!matches.length) { dd.style.display='none'; return; }
+  dd.style.display='block';
+  dd.innerHTML = matches.map(c => `
+    <div onclick="selectRdvClient('${c.id}','${c.nom.replace(/'/g,"\\'")}','${c.ville||''}')" style="padding:.55rem 1rem;cursor:pointer;font-size:.84rem;border-bottom:1px solid var(--border);transition:background .1s;" onmouseover="this.style.background='var(--green-pale)'" onmouseout="this.style.background='white'">
+      <strong>${c.nom}</strong>${c.ville?` <span style="color:var(--text-muted)">— ${c.ville}</span>`:''}
+    </div>`).join('');
+}
+
+function selectRdvClient(id, nom, ville) {
+  document.getElementById('rdv-client-id').value = id;
+  document.getElementById('rdv-client-search').value = nom;
+  document.getElementById('rdv-client-selected').textContent = nom + (ville?` — ${ville}`:'');
+  document.getElementById('rdv-client-selected').style.display = 'block';
+  document.getElementById('rdv-client-dropdown').style.display = 'none';
+}
+
+async function saveRdv() {
+  const clientNom = document.getElementById('rdv-client-search').value.trim();
+  const dateKey   = document.getElementById('rdv-date').value;
+  const slot      = document.getElementById('rdv-heure').value;
+  if (!clientNom) { alert('Veuillez sélectionner un client.'); return; }
+  if (!dateKey || !slot) { alert('Date et heure obligatoires.'); return; }
+
+  const payload = {
+    date: dateKey, time_slot: slot,
+    client_id:   document.getElementById('rdv-client-id').value||null,
+    client_nom:  clientNom,
+    variete:     document.getElementById('rdv-variete').value,
+    type_chargement: document.getElementById('rdv-chargement').value,
+    type_palette:    document.getElementById('rdv-palette').value,
+    quantite:        document.getElementById('rdv-quantite').value,
+    nb_camions:  parseInt(document.getElementById('rdv-camions').value)||1,
+    lave:        document.getElementById('rdv-lave').checked,
+    a_confirmer: document.getElementById('rdv-confirmer').checked,
+    observation: document.getElementById('rdv-obs').value,
+    note_privee: document.getElementById('rdv-note-privee').value,
+    user_id:     currentUserId
+  };
+
+  if (editingRdvId) {
+    const {error} = await sb.from('planning_rdv').update(payload).eq('id', editingRdvId);
+    if (error) { alert(error.message); return; }
+    payload.id = editingRdvId;
+  } else {
+    const {data,error} = await sb.from('planning_rdv').insert(payload).select().single();
+    if (error) { alert(error.message); return; }
+    payload.id = data.id; editingRdvId = data.id;
+  }
+
+  if (!planRdvs[dateKey]) planRdvs[dateKey] = {};
+  planRdvs[dateKey][slot] = payload;
+  renderPlanning();
+  closeModal('rdv-modal');
+  showToast('✅ RDV enregistré');
+}
+
+async function deleteRdv() {
+  if (!editingRdvId) return;
+  if (!confirm('Supprimer ce RDV ?')) return;
+  const dateKey = document.getElementById('rdv-date').value;
+  const slot    = document.getElementById('rdv-heure').value;
+  await sb.from('planning_rdv').delete().eq('id', editingRdvId);
+  if (planRdvs[dateKey]) delete planRdvs[dateKey][slot];
+  renderPlanning(); closeModal('rdv-modal'); showToast('🗑️ RDV supprimé');
+}
+
+/* ══════════════════════════════════════
+   MODAL HELPERS
+══════════════════════════════════════ */
+function openModal(id) {
+  document.getElementById(id).classList.add('on');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('on');
+  editingRecord = {type:null,id:null};
+}
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', function(e){ if(e.target===this) closeModal(this.id); });
+});
+
+
+</script>
+</body>
+</html>
